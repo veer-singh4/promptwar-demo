@@ -1,67 +1,121 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useVenue } from '../context/VenueContext';
-import { AlertCircle, Clock, CheckCircle, ArrowRight } from 'lucide-react';
+import { AlertCircle, Clock, CheckCircle, ArrowRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { cn } from '../components/MobileLayout';
+import { cn } from '../lib/utils';
 
+/**
+ * Home component provides the landing experience for fans.
+ * Displays venue capacity, quick stats, and live alerts.
+ */
 const Home = () => {
   const { alerts, gates, facilities } = useVenue();
   const navigate = useNavigate();
 
-  const bestGate = gates.reduce((prev, current) => (prev.pct < current.pct) ? prev : current);
-  const bestFood = facilities.filter(f => f.type === 'food').reduce((prev, current) => (prev.wait < current.wait) ? prev : current);
-  
-  const totalCapacity = Math.round(gates.reduce((sum, g) => sum + g.pct, 0) / gates.length);
+  // Memoize stats to prevent unnecessary re-calc on every render
+  const stats = useMemo(() => {
+    const bestGate = gates.reduce((prev, current) => (prev.pct < current.pct) ? prev : current);
+    const bestFood = facilities.filter(f => f.type === 'food').reduce((prev, current) => (prev.wait < current.wait) ? prev : current);
+    const totalCapacity = Math.round(gates.reduce((sum, g) => sum + g.pct, 0) / gates.length);
+    
+    return { bestGate, bestFood, totalCapacity };
+  }, [gates, facilities]);
+
+  const { bestGate, bestFood, totalCapacity } = stats;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <header className="flex justify-between items-center mb-2">
-        <h1 className="text-2xl font-bold text-slate-100">VenueIQ</h1>
-        <div className="bg-[var(--color-navy-card)] rounded-full px-3 py-1 text-sm border border-[var(--color-navy-border)] flex items-center gap-2">
-          <div className={cn("w-2 h-2 rounded-full", totalCapacity > 70 ? "bg-[var(--color-status-red)]" : totalCapacity > 40 ? "bg-[var(--color-status-amber)]" : "bg-[var(--color-status-green)]")} />
-          Venue {totalCapacity}% Full
+    <div className="space-y-6 animate-in fade-in duration-500 pb-8" role="region" aria-label="Home Dashboard">
+      <header className="flex justify-between items-end mb-2">
+        <div>
+          <h1 className="text-3xl font-black text-white tracking-tight">VenueIQ</h1>
+          <p className="text-slate-400 text-sm">Your intelligent match day partner.</p>
+        </div>
+        <div 
+          className="bg-[var(--color-navy-card)] rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--color-navy-border)] flex items-center gap-2 shadow-sm"
+          aria-live="polite"
+        >
+          <div className={cn(
+            "w-2.5 h-2.5 rounded-full animate-pulse", 
+            totalCapacity > 70 ? "bg-[var(--color-status-red)]" : totalCapacity > 40 ? "bg-[var(--color-status-amber)]" : "bg-[var(--color-status-green)]"
+          )} />
+          {totalCapacity}% Capacity
         </div>
       </header>
 
-      <section className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-xl p-5 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-accent-blue)] opacity-10 rounded-full -mr-10 -mt-10 blur-xl"></div>
-        <h2 className="text-xl font-bold text-white mb-1 relative z-10">Quarterfinals: City vs United</h2>
-        <p className="text-slate-400 text-sm mb-4 relative z-10">Grand Stadium • Kickoff 7:30 PM</p>
-        
-        <button 
-          onClick={() => navigate('/plan')}
-          className="w-full bg-[var(--color-accent-blue)] hover:bg-blue-600 active:bg-blue-700 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors min-h-[44px]"
-        >
-          Build My Plan <ArrowRight size={18} />
-        </button>
+      {/* Hero Event Card */}
+      <section 
+        className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-2xl p-6 shadow-xl relative overflow-hidden group"
+        aria-labelledby="hero-title"
+      >
+        <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--color-accent-blue)] opacity-10 rounded-full -mr-20 -mt-20 blur-3xl transition-opacity group-hover:opacity-20"></div>
+        <div className="relative z-10">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-accent-blue)] mb-2 block">Live Event</span>
+          <h2 id="hero-title" className="text-2xl font-bold text-white mb-1">Quarterfinals: City vs United</h2>
+          <p className="text-slate-400 text-sm mb-6">Grand Stadium • Kickoff 7:30 PM</p>
+          
+          <div className="flex gap-3">
+            <button 
+              onClick={() => navigate('/plan')}
+              className="flex-1 bg-[var(--color-accent-blue)] hover:bg-blue-600 active:scale-95 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
+            >
+              Custom Plan <ArrowRight size={18} />
+            </button>
+            <button 
+              onClick={() => navigate('/assistant')}
+              className="px-4 bg-[var(--color-navy-border)] hover:bg-slate-700 text-white rounded-xl transition-all flex items-center justify-center shadow-md"
+              aria-label="Talk to AI Assistant"
+            >
+              <Sparkles size={20} className="text-[var(--color-status-amber)]" />
+            </button>
+          </div>
+        </div>
       </section>
 
-      <section className="space-y-3">
-        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Live System Alerts</h3>
-        <div className="space-y-3">
-          {alerts.slice(0, 2).map((alert, idx) => (
-            <div key={idx} className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-xl p-4 flex gap-3 items-start shadow-sm">
-              {alert.type === 'warn' && <AlertCircle className="text-[var(--color-status-amber)] shrink-0" size={20} />}
-              {alert.type === 'info' && <Clock className="text-[var(--color-accent-blue)] shrink-0" size={20} />}
-              {alert.type === 'success' && <CheckCircle className="text-[var(--color-status-green)] shrink-0" size={20} />}
-              <p className="text-sm text-slate-200 leading-snug">{alert.text}</p>
+      {/* Live Alerts Area */}
+      <section className="space-y-4" aria-labelledby="alerts-title">
+        <h3 id="alerts-title" className="text-xs font-black text-slate-500 uppercase tracking-[0.15em] px-1">System Broadcasts</h3>
+        <div className="space-y-3" role="log" aria-relevant="additions">
+          {alerts.slice(0, 2).map((alert) => (
+            <div 
+              key={alert.id} 
+              className="bg-[var(--color-navy-card)]/50 backdrop-blur-sm border border-[var(--color-navy-border)] rounded-2xl p-4 flex gap-4 items-center shadow-sm hover:border-slate-600 transition-colors"
+              role="alert"
+            >
+              <div className={cn(
+                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                alert.type === 'warn' ? "bg-[var(--color-status-red)]/10 text-[var(--color-status-red)]" : 
+                alert.type === 'info' ? "bg-[var(--color-accent-blue)]/10 text-[var(--color-accent-blue)]" : 
+                "bg-[var(--color-status-green)]/10 text-[var(--color-status-green)]"
+              )}>
+                {alert.type === 'warn' && <AlertCircle size={20} />}
+                {alert.type === 'info' && <Clock size={20} />}
+                {alert.type === 'success' && <CheckCircle size={20} />}
+              </div>
+              <p className="text-sm font-medium text-slate-200 leading-snug">{alert.text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="space-y-3">
-        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Quick Stats</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-xl p-4">
-            <p className="text-xs text-slate-400 mb-1">Fastest Gate</p>
-            <p className="text-lg font-bold text-white">{bestGate.label}</p>
-            <p className="text-xs text-[var(--color-status-green)] mt-1">{bestGate.pct}% load</p>
+      {/* Quick Stats Grid */}
+      <section className="space-y-4" aria-labelledby="stats-title">
+        <h3 id="stats-title" className="text-xs font-black text-slate-500 uppercase tracking-[0.15em] px-1">Venue Intelligence</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-2xl p-5 shadow-sm transition-transform hover:scale-[1.02]">
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">Gate Traffic</p>
+            <p className="text-lg font-bold text-white mb-0.5">{bestGate.label}</p>
+            <p className="text-xs font-semibold text-[var(--color-status-green)] flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-status-green)]"></span>
+              {bestGate.pct}% Load
+            </p>
           </div>
-          <div className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-xl p-4">
-            <p className="text-xs text-slate-400 mb-1">Quickest Food</p>
-            <p className="text-lg font-bold text-white leading-tight">{bestFood.label}</p>
-            <p className="text-xs text-[var(--color-status-green)] mt-1">{bestFood.wait} min wait</p>
+          <div className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-2xl p-5 shadow-sm transition-transform hover:scale-[1.02]">
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">Service Speed</p>
+            <p className="text-lg font-bold text-white mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis">{bestFood.label}</p>
+            <p className="text-xs font-semibold text-[var(--color-status-green)] flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-status-green)]"></span>
+              {bestFood.wait}m wait
+            </p>
           </div>
         </div>
       </section>

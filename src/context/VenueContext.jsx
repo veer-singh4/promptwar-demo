@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { sanitize } from '../lib/utils';
 
 const initialGates = [
   { id: "G1", label: "Gate 1", pct: 88, status: "avoid", pos: "top-4 left-1/2 -translate-x-1/2" },
@@ -36,22 +37,44 @@ export const VenueProvider = ({ children }) => {
   const [facilities, setFacilities] = useState(initialFacilities);
   const [alerts, setAlerts] = useState(initialAlerts);
   const [helpRequests, setHelpRequests] = useState([]);
+  const [lastSosTime, setLastSosTime] = useState(0);
 
-  const raiseEmergency = (type, location, details) => {
+  const raiseEmergency = useCallback((type, location, details) => {
+    // Rate limit: Max 1 SOS every 10 seconds per session
+    const now = Date.now();
+    if (now - lastSosTime < 10000) {
+      console.warn("SOS rate limited");
+      return false;
+    }
+
     const newRequest = {
       id: Math.random().toString(36).substr(2, 9),
-      type,
-      location: location || "Unknown Location",
-      details,
+      type: sanitize(type),
+      location: sanitize(location) || "Unknown Location",
+      details: sanitize(details),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       status: 'active'
     };
+    
     setHelpRequests(prev => [newRequest, ...prev]);
-  };
+    setLastSosTime(now);
+    return true;
+  }, [lastSosTime]);
 
-  const resolveEmergency = (id) => {
+  const resolveEmergency = useCallback((id) => {
     setHelpRequests(prev => prev.filter(req => req.id !== id));
-  };
+  }, []);
+
+  const updateAlerts = useCallback((newAlerts) => {
+    if (typeof newAlerts === 'function') {
+      setAlerts(prev => {
+        const result = newAlerts(prev);
+        return result.map(a => ({ ...a, text: sanitize(a.text) }));
+      });
+    } else {
+      setAlerts(newAlerts.map(a => ({ ...a, text: sanitize(a.text) })));
+    }
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -72,8 +95,19 @@ export const VenueProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
+  const value = useMemo(() => ({
+    gates,
+    parking,
+    facilities,
+    alerts,
+    helpRequests,
+    setAlerts: updateAlerts,
+    raiseEmergency,
+    resolveEmergency
+  }), [gates, parking, facilities, alerts, helpRequests, updateAlerts, raiseEmergency, resolveEmergency]);
+
   return (
-    <VenueContext.Provider value={{ gates, parking, facilities, alerts, helpRequests, setAlerts, raiseEmergency, resolveEmergency }}>
+    <VenueContext.Provider value={value}>
       {children}
     </VenueContext.Provider>
   );
