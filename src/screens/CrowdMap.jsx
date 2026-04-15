@@ -1,90 +1,109 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useVenue } from '../context/VenueContext';
 import { useAuth } from '../context/AuthContext';
+import { Map, AdvancedMarker, InfoWindow, useMap } from '@vis.gl/react-google-maps';
 import { cn } from '../lib/utils';
 
 /**
- * CrowdMap component provides a visual overview of venue crowding.
- * Displays heatmaps for gates and parking sectors.
- * Designed for both fans (Fan Engagement) and staff (Operations).
+ * CrowdMap component provides a visual overview of venue crowding using Google Maps.
  */
 export default function CrowdMap() {
   const { gates, parking } = useVenue();
   const { role } = useAuth();
+  const [selectedZone, setSelectedZone] = useState(null);
   
+  // Center of the venue (stadium coordinates - approx for demo)
+  const center = { lat: 51.5560, lng: -0.2795 }; // Example: Wembley Stadium
+
   /**
    * Helper to determine density status color classes
    */
   const getStatusColor = (pct) => {
-    if (pct > 70) return 'bg-[var(--color-status-red)] text-white shadow-[0_0_15px_rgba(226,75,74,0.4)] ring-2 ring-white/20';
-    if (pct > 40) return 'bg-[var(--color-status-amber)] text-[#0D1B2A] shadow-[0_0_15px_rgba(239,159,39,0.4)]';
-    return 'bg-[var(--color-status-green)] text-[#0D1B2A] shadow-[0_0_15px_rgba(29,158,117,0.4)]';
+    if (pct > 70) return 'bg-[#E24B4A]';
+    if (pct > 40) return 'bg-[#EF9F27]';
+    return 'bg-[#1D9E75]';
+  };
+
+  const mapOptions = {
+    disableDefaultUI: true,
+    zoomControl: true,
+    mapId: 'VENUE_IQ_DARK_MAP', // Requires configuration in Google Cloud Console
+    styles: [
+      { "elementType": "geometry", "stylers": [{ "color": "#0d1b2a" }] },
+      { "elementType": "labels.text.fill", "stylers": [{ "color": "#7489a8" }] },
+      { "elementType": "labels.text.stroke", "stylers": [{ "color": "#0d1b2a" }] },
+      { "featureType": "administrative", "elementType": "geometry", "stylers": [{ "visibility": "off" }] },
+      { "featureType": "poi", "stylers": [{ "visibility": "off" }] },
+      { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#1b263b" }] },
+      { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#08111a" }] }
+    ]
   };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 flex flex-col h-full" role="region" aria-label="Crowd Density Map">
       <header>
         <h1 className="text-2xl font-black text-white leading-tight">
-          {role === 'HOST' ? 'Operations Overview' : 'Venue Live Density'}
+          {role === 'HOST' ? 'Operations Overview' : 'Live Crowd Density'}
         </h1>
         <p className="text-slate-400 text-sm">Zone-level traffic monitoring updating in real-time.</p>
       </header>
 
-      {/* 
-          INTENTIONAL PLACEHOLDER: 
-          In a production build with a valid API key, this div will host the 
-          @vis.gl/react-google-maps implementation. 
-      */}
       <div 
-        className="bg-[#050b14] border-2 border-[var(--color-navy-border)] rounded-[2rem] p-4 aspect-square relative shadow-2xl overflow-hidden shrink-0 mt-2"
-        role="img"
-        aria-label="Schematic venue map showing gate and parking loads"
+        className="bg-[#050b14] border-2 border-[var(--color-navy-border)] rounded-[2rem] h-[400px] relative shadow-2xl overflow-hidden shrink-0 mt-2"
+        role="application"
+        aria-label="Interactive Google Map of the venue"
       >
-        {/* Decorative Grid Background */}
-        <div 
-          className="absolute inset-0 opacity-[0.03]" 
-          style={{backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '24px 24px'}}
-        ></div>
+        <Map
+          defaultCenter={center}
+          defaultZoom={17}
+          options={mapOptions}
+          mapTypeId={'roadmap'}
+        >
+          {/* Dynamic Gate Markers */}
+          {gates.map(g => (
+            <AdvancedMarker
+              key={g.id}
+              position={{ lat: center.lat + (Math.random() - 0.5) * 0.005, lng: center.lng + (Math.random() - 0.5) * 0.005 }}
+              onClick={() => setSelectedZone({ ...g, type: 'Gate' })}
+            >
+              <div className={cn(
+                "w-10 h-10 rounded-xl flex items-center justify-center border-2 border-white/20 shadow-xl transition-transform hover:scale-110",
+                getStatusColor(g.pct)
+              )}>
+                <span className="text-[10px] font-black text-white">{g.id}</span>
+              </div>
+            </AdvancedMarker>
+          ))}
 
-        {/* Central Arena Logic */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-72 border-2 border-slate-800/30 rounded-full flex items-center justify-center bg-[#08111a]/60 z-10 backdrop-blur-md shadow-2xl">
-           <div className="w-40 h-56 bg-emerald-900/10 rounded-full border border-emerald-500/20 flex flex-col items-center justify-center relative">
-             <div className="absolute inset-0 bg-emerald-500/5 blur-xl animate-pulse"></div>
-             <span className="font-black text-emerald-500/40 tracking-[0.4em] transform -rotate-90 md:rotate-0 text-[10px] uppercase">Pitch Area</span>
-           </div>
-        </div>
+          {/* Dynamic Parking Markers */}
+          {parking.map(p => (
+            <AdvancedMarker
+              key={p.id}
+              position={{ lat: center.lat + (Math.random() - 0.5) * 0.008, lng: center.lng + (Math.random() - 0.5) * 0.008 }}
+              onClick={() => setSelectedZone({ ...p, type: 'Parking' })}
+            >
+               <div className={cn(
+                "w-12 h-8 rounded-lg flex items-center justify-center border-2 border-dashed border-white/30 shadow-lg",
+                getStatusColor(p.pct)
+              )}>
+                <span className="text-[9px] font-black text-white">{p.id}</span>
+              </div>
+            </AdvancedMarker>
+          ))}
 
-        {/* Interactive Gate Markers */}
-        {gates.map(g => (
-          <div 
-            key={g.id} 
-            className={cn(
-              "absolute w-12 h-12 rounded-2xl flex flex-col items-center justify-center z-30 transition-all duration-700 hover:scale-110 cursor-default", 
-              g.pos, 
-              getStatusColor(g.pct)
-            )}
-            title={`${g.label}: ${g.pct}% Capacity`}
-          >
-            <span className="text-[10px] font-black">{g.id}</span>
-            <span className="text-[9px] font-bold opacity-80">{g.pct}%</span>
-          </div>
-        ))}
-
-        {/* Interactive Parking Markers */}
-        {parking.map(p => (
-           <div 
-            key={p.id} 
-            className={cn(
-              "absolute w-24 h-14 rounded-2xl flex flex-col items-center justify-center z-20 border-2 border-dashed transition-all duration-700 hover:border-white/50", 
-              p.pos, 
-              getStatusColor(p.pct)
-            )}
-            title={`${p.label}: ${p.pct}% Occupancy`}
-           >
-              <span className="text-[9px] font-black uppercase tracking-tighter opacity-70 mb-0.5">{p.id}</span>
-              <span className="text-[11px] font-black">{p.pct}% FULL</span>
-           </div>
-        ))}
+          {selectedZone && (
+            <InfoWindow
+              position={{ lat: center.lat, lng: center.lng }}
+              onCloseClick={() => setSelectedZone(null)}
+            >
+              <div className="p-2 text-[#0d1b2a]">
+                <h3 className="font-bold border-b pb-1 mb-1">{selectedZone.label}</h3>
+                <p className="text-xs">{selectedZone.type} Status: <strong>{selectedZone.pct}% Capacity</strong></p>
+                {selectedZone.wait && <p className="text-xs">Estimated Wait: <strong>{selectedZone.wait} min</strong></p>}
+              </div>
+            </InfoWindow>
+          )}
+        </Map>
       </div>
 
       {/* Map Content Legend */}
@@ -92,15 +111,15 @@ export default function CrowdMap() {
         <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Live Legend</h3>
         <div className="flex justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-status-green)] shadow-[0_0_8px_rgba(29,158,117,1)]"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-[#1D9E75] shadow-[0_0_8px_rgba(29,158,117,1)]"></div>
             <span className="text-[11px] font-bold text-slate-300">Optimal</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-status-amber)] shadow-[0_0_8px_rgba(239,159,39,1)]"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-[#EF9F27] shadow-[0_0_8px_rgba(239,159,39,1)]"></div>
             <span className="text-[11px] font-bold text-slate-300">Congested</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-status-red)] shadow-[0_0_8px_rgba(226,75,74,1)]"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-[#E24B4A] shadow-[0_0_8px_rgba(226,75,74,1)]"></div>
             <span className="text-[11px] font-bold text-slate-300">At Limit</span>
           </div>
         </div>

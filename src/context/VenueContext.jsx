@@ -95,6 +95,26 @@ export const VenueProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
+  /**
+   * Manual Simulation Override: Allows a host to "Stress Test" the system
+   */
+  const triggerChaos = useCallback(() => {
+    setGates(prev => prev.map(g => ({ ...g, pct: 95, status: 'avoid' })));
+    setParking(prev => prev.map(p => ({ ...p, pct: 98 })));
+    setFacilities(prev => prev.map(f => ({ ...f, wait: f.wait + 20 })));
+    setAlerts(prev => [
+      { id: 'chaos', type: 'warn', text: "SYSTEM CRITICAL: Mass load detected at all sectors." },
+      ...prev
+    ]);
+  }, []);
+
+  const resetSimulation = useCallback(() => {
+    setGates(initialGates);
+    setParking(initialParking);
+    setFacilities(initialFacilities);
+    setAlerts(initialAlerts);
+  }, []);
+
   const value = useMemo(() => ({
     gates,
     parking,
@@ -103,8 +123,10 @@ export const VenueProvider = ({ children }) => {
     helpRequests,
     setAlerts: updateAlerts,
     raiseEmergency,
-    resolveEmergency
-  }), [gates, parking, facilities, alerts, helpRequests, updateAlerts, raiseEmergency, resolveEmergency]);
+    resolveEmergency,
+    triggerChaos,
+    resetSimulation
+  }), [gates, parking, facilities, alerts, helpRequests, updateAlerts, raiseEmergency, resolveEmergency, triggerChaos, resetSimulation]);
 
   return (
     <VenueContext.Provider value={value}>

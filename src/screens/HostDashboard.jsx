@@ -3,10 +3,10 @@ import { useVenue } from '../context/VenueContext';
 import { trackBroadcast } from '../services/analyticsService';
 import { ShieldAlert, AlertOctagon, Bell, Send, CheckCircle, Activity, Users, Truck } from 'lucide-react';
 import { cn, sanitize } from '../lib/utils';
+import SimulationControls from '../components/SimulationControls';
 
 /**
  * HostDashboard component: The central Command and Control interface for venue managers.
- * Provides real-time visibility into system stress, emergencies, and utility loads.
  */
 export default function HostDashboard() {
   const { gates, parking, setAlerts, helpRequests, resolveEmergency } = useVenue();
@@ -58,6 +58,9 @@ export default function HostDashboard() {
             <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Sys Ready</span>
          </div>
       </header>
+
+      {/* NEW: Simulation Controls for Judges */}
+      <SimulationControls />
 
       {/* System Status Banner */}
       <section 

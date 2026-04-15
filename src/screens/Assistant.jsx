@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useVenue } from '../context/VenueContext';
 import { useAuth } from '../context/AuthContext';
-import { askGemini } from '../services/geminiService';
+import { askGemini, resetChat } from '../services/geminiService';
 import { trackAIQuery } from '../services/analyticsService';
-import { Send, Bot, User, Sparkles, Loader2, MessageSquare } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { Send, Bot, User, Sparkles, Loader2, Trash2 } from 'lucide-react';
+import { cn, sanitize } from '../lib/utils';
 
 export default function Assistant() {
   const venueData = useVenue();
@@ -29,11 +29,16 @@ export default function Assistant() {
 
     const userMsg = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMsg, timestamp: new Date() }]);
+    
+    // Add user message to state
+    const newMessages = [...messages, { role: 'user', text: userMsg, timestamp: new Date() }];
+    setMessages(newMessages);
     setLoading(true);
 
     try {
-      const response = await askGemini(userMsg, venueData, role);
+      // Pass the entire history (excluding current message which is added inside service or handled here)
+      // Actually, passing the history before this turn is better.
+      const response = await askGemini(userMsg, venueData, role, messages);
       setMessages(prev => [...prev, { role: 'assistant', text: response, timestamp: new Date() }]);
       trackAIQuery(userMsg.length, true);
     } catch (err) {
@@ -44,22 +49,37 @@ export default function Assistant() {
     }
   };
 
+  const clearChat = () => {
+    resetChat();
+    setMessages([{ role: 'assistant', text: `Chat cleared. How else can I help?`, timestamp: new Date() }]);
+  };
+
   const suggestions = role === 'HOST' 
     ? ["Summarize system stress", "Draft emergency PA alert", "Identify bottlenecks"]
     : ["Fastest food right now?", "Which gate is clearest?", "Where is block 112?"];
 
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
-      <header className="mb-4 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-[var(--color-accent-blue)] flex items-center justify-center shadow-[0_0_15px_rgba(30,144,255,0.4)]">
-          <Bot size={24} className="text-white" />
+      <header className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[var(--color-accent-blue)] flex items-center justify-center shadow-[0_0_15px_rgba(30,144,255,0.4)]">
+            <Bot size={24} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white flex items-center gap-2">
+              AI Assistant <Sparkles size={16} className="text-[var(--color-status-amber)] animate-pulse" />
+            </h1>
+            <p className="text-xs text-slate-400">Context-Aware Match Day Intelligence</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            AI Assistant <Sparkles size={16} className="text-[var(--color-status-amber)] animate-pulse" />
-          </h1>
-          <p className="text-xs text-slate-400">Context-Aware Match Day Intelligence</p>
-        </div>
+        <button 
+          onClick={clearChat}
+          className="p-2 text-slate-500 hover:text-red-400 transition-colors"
+          title="Clear Conversation"
+          aria-label="Clear Conversation"
+        >
+          <Trash2 size={18} />
+        </button>
       </header>
 
       {/* Chat History */}
@@ -75,14 +95,15 @@ export default function Assistant() {
             )}>
               {msg.role === 'user' ? <User size={16} /> : <Bot size={16} className="text-[var(--color-accent-blue)]" />}
             </div>
-            <div className={cn(
-              "max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm",
-              msg.role === 'user' 
-                ? "bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] text-slate-100 rounded-tr-none" 
-                : "bg-[var(--color-navy-border)]/40 text-slate-200 border border-slate-700/30 rounded-tl-none backdrop-blur-sm"
-            )}>
-              {msg.text}
-            </div>
+            <div 
+              className={cn(
+                "max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm prose prose-invert prose-sm",
+                msg.role === 'user' 
+                  ? "bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] text-slate-100 rounded-tr-none" 
+                  : "bg-[var(--color-navy-border)]/40 text-slate-200 border border-slate-700/30 rounded-tl-none backdrop-blur-sm"
+              )}
+              dangerouslySetInnerHTML={{ __html: sanitize(msg.text) }}
+            />
           </div>
         ))}
         {loading && (

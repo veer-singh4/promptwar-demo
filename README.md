@@ -4,10 +4,12 @@
 
 ---
 
-## 🏆 Competition Metrics 
-- **Vertical**: Sports, Event Management & Fan Engagement
-- **Google Services**: Gemini AI (contextual assistant), Google Analytics 4 (event tracking), Cloud Run (deployment).
-- **Core Stack**: React 19, Vite 8, Tailwind 4, Recharts, Lucide, Vitest.
+## 🏆 Hackathon Spotlight
+- **Google Services**: 
+  - **Gemini 1.5 Flash**: Context-aware assistant for routing and incident drafting.
+  - **Google Maps (React)**: Live-tracked markers, custom dark-mode styling, and interactive zone analysis.
+  - **Google Analytics 4**: High-value event tracking for SOS, AI, and Broadcast actions.
+- **Premium Aesthetics**: Glassmorphism UI, Recharts trend analysis, and motion-optimized transitions.
 
 ---
 
@@ -16,63 +18,54 @@
 VenueIQ operates on a **Context-Aware Intelligence** model. Unlike static applications, our solution understands the *physical state* of the venue (wait times, gate loads, parking occupancy) and uses this as a "System Instruction" for the built-in Gemini AI.
 
 ### How It Works:
-1. **Live Data Simulation**: The system simulates real-time variations in crowd density and service speeds across 15+ venue nodes.
+1. **Live Data Simulation**: A built-in "Simulation Engine" varies crowd density and service speeds across 15+ venue nodes.
 2. **Context Injection**: Every AI query automatically injects the current venue state and user role into the Gemini 1.5 Flash model.
 3. **Role-Based Logic**: 
-   - **Fans (Attendee)**: Receive navigation advice, optimized itineraries ("MyPlan"), and live assistance.
-   - **Staff (Host)**: Receive system stress analysis, emergency management tools, and broadcast capabilities.
+   - **Fans (Attendee)**: Focus on comfort, navigation, and time-saving.
+   - **Staff (Host)**: Focus on operational efficiency, system stress analysis, and emergency responses.
 
 ---
 
-## 🚀 Meaningful Google Integrations
+## 🚀 Key Google Integrations
 
 ### 1. Gemini 1.5 Flash (Smart Assistant)
 A context-aware assistant that provides dynamic answers based on live venue metrics.
-- **Fans**: "Which gate is least crowded?" → Gemini analyzes gate % and recommends the fastest entry.
-- **Staff**: "Current system status?" → Gemini identifies high-load sectors and suggests mitigation strategies.
+- **Features**: Multi-turn chat sessions and safety-filtered outputs.
+- **Sanitization**: All AI responses are sanitized via `DOMPurify` before rendering to ensure session safety.
 
-### 2. Google Analytics 4 (GA4)
-Integrated event tracking to monitor high-impact user actions, such as:
-- Emergency SOS Triggers
-- AI Query frequency and success rates
-- System-wide broadcasts
+### 2. Google Maps (Interactive Logistics)
+Built using `@vis.gl/react-google-maps`.
+- **Interactivity**: Clickable markers for gates and parking sectors with live load data.
+- **Custom Styling**: Advanced dark-mode JSON styling to match the premium application aesthetic.
 
-### 3. Google Cloud Run
-Containerized with a performance-optimized and hardened Nginx configuration, deployed on serverless infrastructure for 99.9% availability and global scale.
-
----
-
-## 🔒 Security & Privacy
-- **Sanitization**: All user inputs (SOS reports, broadcasts, seat numbers) are sanitized via **DOMPurify** before persistence or rendering to prevent XSS.
-- **Rate-Limiting**: Emergency SOS triggers are rate-limited per session to prevent system spam.
-- **Header Hardening**: Custom Nginx configuration implements **CSP (Content Security Policy)**, **XSS-Protection**, and **HSTS** to ensure a safe environment for fans.
-- **Session Safety**: Auto-logout after 30 minutes of inactivity.
+### 3. Google Analytics 4 (GA4)
+Integrated event tracking to monitor high-impact user actions.
+- **Tracking**: Emergency SOS triggers, AI Query frequency, and Host Broadcasts.
 
 ---
 
-## ♿ Accessibility (WCAG 2.1 AA)
-VenueIQ is built for everyone, featuring:
-- **ARIA Live-Regions**: Real-time alerts and SOS confirmations are announced to screen readers immediately.
-- **Semantic HTML**: Proper heading hierarchy and landmark roles (main, nav, region).
-- **Keyboard Navigation**: Skip-navigation links and consistent focus-visible indicators.
-- **Inclusive Design**: High-contrast ratios and touch-optimized interactive elements (min 44x44px targets).
+## 🔬 Simulation Controls (For Judges)
+In the **Host Dashboard**, we've included a **Simulation Control Board** that allows you to:
+- **Boost Traffic**: Manually stress test the system by increasing gate loads.
+- **Trigger Chaos**: Simulate high-congested states to see Gemini's mitigation recommendations in action.
 
 ---
 
-## 🧪 Testing & Quality
-We maintain a robust testing suite using **Vitest** and **React Testing Library**:
-- **Unit Tests**: Validating all logic utilities, sanitization, and formatting.
-- **Integration Tests**: Ensuring the AuthContext properly routes based on identity (Host vs Attendee).
-- **Graceful Fallbacks**: Root-level **Error Boundaries** ensure the app remains resilient even in edge-case failures.
+## 🔒 Security & Quality
+- **Sanitization**: Robust HTML sanitization for all user and AI content.
+- **Error Boundaries**: Root-level error catching ensures zero app crashes.
+- **Vitest Suite**: Unit tests for all core AI and utility services.
 
 ---
 
 ## 🛠️ Getting Started
 
 ### Environment Variables
-To enable the AI capabilities, create a `.env` file in the root:
+Create a `.env` file in the root using the provided `.env.example`:
 ```env
 VITE_GEMINI_API_KEY=your_key_here
+VITE_GOOGLE_MAPS_API_KEY=your_key_here
+VITE_GA4_ID=G-XXXXXXXXXX
 ```
 
 ### Local Development
@@ -85,9 +78,3 @@ npm run dev
 ```bash
 npm run test
 ```
-
----
-
-## 📝 Assumptions Made
-- The venue possesses IoT sensors (entry gates, BLE beacons) to provide the density metrics used by the system.
-- Staff members have verified "Host/Manager" authentication IDs.
