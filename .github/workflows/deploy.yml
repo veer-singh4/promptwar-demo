@@ -9,6 +9,9 @@ env:
   PROJECT_ID: gen-ai-academy-491610
   SERVICE: venue-iq-pro
   REGION: us-central1
+  # The WIF provider ID created via gcloud
+  WIF_PROVIDER: projects/781746952048/locations/global/workloadIdentityPools/venue-iq-pool/providers/venue-iq-provider
+  WIF_SERVICE_ACCOUNT: venue-iq-deployer@gen-ai-academy-491610.iam.gserviceaccount.com
 
 jobs:
   deploy:
@@ -26,7 +29,8 @@ jobs:
       name: 'Authenticate to Google Cloud'
       uses: 'google-github-actions/auth@v2'
       with:
-        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+        workload_identity_provider: '${{ env.WIF_PROVIDER }}'
+        service_account: '${{ env.WIF_SERVICE_ACCOUNT }}'
 
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v2'
