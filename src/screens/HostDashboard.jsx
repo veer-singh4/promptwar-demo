@@ -4,6 +4,7 @@ import { trackBroadcast } from '../services/analyticsService';
 import { ShieldAlert, AlertOctagon, Bell, Send, CheckCircle, Activity, Users, Truck } from 'lucide-react';
 import { cn, sanitize } from '../lib/utils';
 import SimulationControls from '../components/SimulationControls';
+import AtmosphereCard from '../components/AtmosphereCard';
 
 /**
  * HostDashboard component: The central Command and Control interface for venue managers.
@@ -135,6 +136,29 @@ export default function HostDashboard() {
       </section>
 
       {/* Live Operational Metrics */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <AtmosphereCard />
+        <div className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-2xl p-6 shadow-xl space-y-4">
+          <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] px-1">VIP Sector Loads</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-bold text-white">Platinum Lounge</span>
+              <span className="text-sm font-black text-orange-400">45%</span>
+            </div>
+            <div className="h-1.5 w-full bg-[#08111a] rounded-full overflow-hidden">
+              <div className="h-full bg-orange-500" style={{width: '45%'}}></div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-bold text-white">Executive Suites</span>
+              <span className="text-sm font-black text-red-400">72%</span>
+            </div>
+            <div className="h-1.5 w-full bg-[#08111a] rounded-full overflow-hidden">
+              <div className="h-full bg-red-500" style={{width: '72%'}}></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="grid grid-cols-2 gap-4" aria-label="Quick metrics">
         <div className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-2xl p-5 shadow-lg group transition-colors hover:border-slate-600">
           <div className="flex items-center gap-2 mb-2">

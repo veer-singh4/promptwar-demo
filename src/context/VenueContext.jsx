@@ -29,6 +29,13 @@ const initialAlerts = [
   { id: 'a3', type: "success", text: "Food Court C dropped to 4 min wait." }
 ];
 
+const initialVip = [
+  { id: 'v1', label: "Platinum Lounge", load: 45 },
+  { id: 'v2', label: "Executive Suites", load: 72 }
+];
+
+const initialWeather = { temp: 24, wind: 12, noise: 85 };
+
 const VenueContext = createContext();
 
 export const VenueProvider = ({ children }) => {
@@ -36,6 +43,8 @@ export const VenueProvider = ({ children }) => {
   const [parking, setParking] = useState(initialParking);
   const [facilities, setFacilities] = useState(initialFacilities);
   const [alerts, setAlerts] = useState(initialAlerts);
+  const [vip, setVip] = useState(initialVip);
+  const [weather, setWeather] = useState(initialWeather);
   const [helpRequests, setHelpRequests] = useState([]);
   const [lastSosTime, setLastSosTime] = useState(0);
 
@@ -120,13 +129,15 @@ export const VenueProvider = ({ children }) => {
     parking,
     facilities,
     alerts,
+    vip,
+    weather,
     helpRequests,
     setAlerts: updateAlerts,
     raiseEmergency,
     resolveEmergency,
     triggerChaos,
     resetSimulation
-  }), [gates, parking, facilities, alerts, helpRequests, updateAlerts, raiseEmergency, resolveEmergency, triggerChaos, resetSimulation]);
+  }), [gates, parking, facilities, alerts, vip, weather, helpRequests, updateAlerts, raiseEmergency, resolveEmergency, triggerChaos, resetSimulation]);
 
   return (
     <VenueContext.Provider value={value}>
