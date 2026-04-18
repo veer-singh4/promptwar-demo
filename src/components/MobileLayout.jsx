@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link, useLocation, Navigate, Routes, Route } from 'react-router-dom';
+import { Link, useLocation, Navigate, Routes, Route, useNavigate } from 'react-router-dom';
 import { 
   Home as HomeIcon, Map as MapIcon, Info,
   LayoutDashboard, AlertOctagon, LogOut, Navigation as NavigationIcon
@@ -23,9 +23,15 @@ const HostAlerts = lazy(() => import('../screens/HostAlerts'));
 export default function MobileLayout() {
   const { role, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const mainRef = useRef(null);
 
   if (!role) return <Navigate to="/login" replace />;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
 
   // Automatic Scroll to Top on path change
   useEffect(() => {
@@ -60,8 +66,9 @@ export default function MobileLayout() {
 
       {/* Profile/Logout */}
       <button 
-        onClick={logout} 
+        onClick={handleLogout} 
         className="fixed top-4 right-4 z-[100] bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer shadow-xl active:scale-95" 
+        title="Sign Out"
       >
         <LogOut size={16} />
       </button>
