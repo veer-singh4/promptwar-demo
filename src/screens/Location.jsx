@@ -5,7 +5,7 @@ import { useMap, useMapsLibrary, Map, AdvancedMarker, Pin } from '@vis.gl/react-
 import { 
   MapPin, Navigation as NavigationIcon, Car, Footprints, 
   Bus, Route, Map as MapIcon, ChevronRight, Timer, Milestone,
-  Maximize2, Minimize2, X, AlertCircle
+  Maximize2, Minimize2, X, AlertCircle, Search
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import VenueConfigCard from '../components/VenueConfigCard';
@@ -26,8 +26,9 @@ export default function Location() {
 
   const stadiumLocation = { lat: venueLocation.lat, lng: venueLocation.lng };
 
-  const inputRef = useRef(null);
+  const originInputRef = useRef(null);
   const [autocomplete, setAutocomplete] = useState(null);
+  const [origin, setOrigin] = useState(null); // Custom origin from search
 
   // For host experience
   if (role === 'HOST') {
@@ -70,6 +71,51 @@ export default function Location() {
     return () => dr.setMap(null);
   }, [routesLibrary, map]);
 
+  // Initialize Autocomplete for Origin
+  useEffect(() => {
+    if (!placesLibrary || !originInputRef.current || !window.google) return;
+
+    try {
+      const options = {
+        fields: ['geometry', 'formatted_address', 'name'],
+      };
+
+      const ac = new window.google.maps.places.Autocomplete(originInputRef.current, options);
+      setAutocomplete(ac);
+
+      return () => {
+        if (ac && window.google) {
+          window.google.maps.event.clearInstanceListeners(ac);
+        }
+      };
+    } catch (err) {
+      console.error("Autocomplete failed to init:", err);
+    }
+  }, [placesLibrary]);
+
+  // Handle Origin place selection
+  useEffect(() => {
+    if (!autocomplete) return;
+
+    const listener = autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      
+      if (place.geometry && place.geometry.location) {
+        setOrigin({
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+          address: place.formatted_address || place.name
+        });
+      }
+    });
+
+    return () => {
+      if (window.google) {
+        window.google.maps.event.removeListener(listener);
+      }
+    };
+  }, [autocomplete]);
+
   // Request & Sync Route
   useEffect(() => {
     if (!directionsService || !directionsRenderer || !routesLibrary) return;
@@ -81,7 +127,7 @@ export default function Location() {
             const origin = { lat: position.coords.latitude, lng: position.coords.longitude };
             
             directionsService.route({
-              origin,
+              origin: origin ? origin : { lat: position.coords.latitude, lng: position.coords.longitude },
               destination: stadiumLocation,
               travelMode: routesLibrary.TravelMode[travelMode],
             }, (result, status) => {
@@ -100,13 +146,37 @@ export default function Location() {
               }
             });
           },
-          () => setError("Please enable GPS for live routing.")
+          () => {
+             // Fallback if GPS fails but we have origin
+             if (origin) {
+                directionsService.route({
+                  origin,
+                  destination: stadiumLocation,
+                  travelMode: routesLibrary.TravelMode[travelMode],
+                }, (result, status) => {
+                  if (status === 'OK') {
+                    directionsRenderer.setDirections(result);
+                    setRouteInfo(result.routes[0].legs[0]);
+                    setError(null);
+                  }
+                });
+             } else {
+               setError("Please enable GPS or enter a starting location.");
+             }
+          }
         );
       }
     };
 
+    if (origin) {
+      // Create a mock position object to reuse the same logic
+      navigator.geolocation.getCurrentPosition = (success) => {
+        success({ coords: { latitude: origin.lat, longitude: origin.lng } });
+      };
+    }
+
     fetchRoute();
-  }, [directionsService, directionsRenderer, travelMode, routesLibrary, venueLocation, isExpanded]);
+  }, [directionsService, directionsRenderer, travelMode, routesLibrary, venueLocation, isExpanded, origin]);
 
   const modes = [
     { id: 'DRIVING', icon: Car },
@@ -125,6 +195,22 @@ export default function Location() {
           <h1 className="text-3xl font-black text-white leading-tight uppercase tracking-tighter">Match Navigation</h1>
           <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">{venueLocation.address}</p>
         </header>
+      )}
+
+      {/* Origin Search */}
+      {!isExpanded && (
+        <div className="relative z-10 px-1">
+          <label className="text-[10px] font-black text-slate-500 uppercase mb-2 block tracking-widest">Starting Point</label>
+          <div className="relative">
+             <input 
+              ref={originInputRef}
+              type="text" 
+              className="w-full bg-[#08111a] border border-[var(--color-navy-border)] rounded-2xl pl-10 pr-4 py-4 text-white text-xs focus:border-[var(--color-accent-blue)] outline-none font-bold placeholder:text-slate-600 shadow-inner"
+              placeholder={origin ? origin.address : "Using current GPS location..."}
+            />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+          </div>
+        </div>
       )}
 
       {/* Interactive Map - Expandable */}

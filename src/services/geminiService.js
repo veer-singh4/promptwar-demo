@@ -7,7 +7,16 @@ const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 let chatSession = null;
 
 /**
- * Generates a system prompt based on the current venue state
+ * Generates a dynamic system prompt based on the current real-time venue state.
+ * This ensures the LLM is context-aware and provides highly accurate, up-to-the-minute advice.
+ * 
+ * @param {Object} venueData - The current state object of the venue.
+ * @param {Array} venueData.gates - Array of gate objects with load percentages.
+ * @param {Array} venueData.facilities - Array of facility objects with wait times.
+ * @param {Array} venueData.parking - Array of parking objects with occupancy.
+ * @param {Array} venueData.alerts - Array of active emergency/info alerts.
+ * @param {string} role - The current user's role ('HOST' or 'ATTENDEE').
+ * @returns {string} The fully constructed system instruction string for Gemini.
  */
 const getSystemPrompt = (venueData, role) => {
   const { gates, facilities, parking, alerts } = venueData;
@@ -36,7 +45,14 @@ Instructions:
 };
 
 /**
- * Sends a message to Gemini and returns the response, maintaining session history.
+ * Sends a highly contextual message to the Gemini 1.5 Flash model and maintains conversation history.
+ * 
+ * @async
+ * @param {string} userQuery - The message or question from the user.
+ * @param {Object} venueData - The live venue context to inject into the system prompt.
+ * @param {string} role - The role of the user (determines AI behavior focus).
+ * @param {Array} [history=[]] - Previous messages in the chat session for multi-turn awareness.
+ * @returns {Promise<string>} The AI's generated response plain text.
  */
 export async function askGemini(userQuery, venueData, role, history = []) {
   if (!genAI) {
@@ -86,7 +102,10 @@ export async function askGemini(userQuery, venueData, role, history = []) {
 }
 
 /**
- * Resets the current chat session
+ * Resets the active chat session memory.
+ * Useful for clearing context when switching major operational modes or upon user request.
+ * 
+ * @returns {void}
  */
 export function resetChat() {
   chatSession = null;

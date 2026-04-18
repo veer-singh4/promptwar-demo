@@ -7,6 +7,7 @@ export default function VenueConfigCard() {
   const { venueLocation, setVenueLocation } = useVenue();
   const map = useMap();
   const placesLibrary = useMapsLibrary('places');
+  const geocodingLibrary = useMapsLibrary('geocoding');
   
   const [address, setAddress] = useState(venueLocation.address);
   const [lat, setLat] = useState(venueLocation.lat);
@@ -72,17 +73,28 @@ export default function VenueConfigCard() {
     };
   }, [autocomplete, map]);
 
-  // Handle map click to set new coordinates manually
+  // Handle map click to set new coordinates manually with Reverse Geocoding
   const onMapClick = useCallback((e) => {
     if (e.detail.latLng) {
       const newLat = e.detail.latLng.lat;
       const newLng = e.detail.latLng.lng;
       setLat(newLat);
       setLng(newLng);
-      // Fallback display if no search conducted
-      setAddress(`Pinned: ${newLat.toFixed(4)}, ${newLng.toFixed(4)}`);
+      
+      if (geocodingLibrary) {
+        const geocoder = new geocodingLibrary.Geocoder();
+        geocoder.geocode({ location: { lat: newLat, lng: newLng } }, (results, status) => {
+          if (status === "OK" && results[0]) {
+            setAddress(results[0].formatted_address);
+          } else {
+            setAddress(`Pinned: ${newLat.toFixed(4)}, ${newLng.toFixed(4)}`);
+          }
+        });
+      } else {
+        setAddress(`Pinned: ${newLat.toFixed(4)}, ${newLng.toFixed(4)}`);
+      }
     }
-  }, []);
+  }, [geocodingLibrary]);
 
   const handleSave = () => {
     setVenueLocation({ address, lat: parseFloat(lat), lng: parseFloat(lng), suggestion });
