@@ -117,8 +117,11 @@ export default function Location() {
         <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">{venueLocation.address}</p>
       </header>
 
-      {/* Expanded Interactive Map */}
-      <div className="h-[360px] w-full rounded-3xl border border-[var(--color-navy-border)] overflow-hidden shadow-2xl relative">
+      {/* Expanded Interactive Map - Explicit height for performance */}
+      <div 
+        className="w-full rounded-3xl border border-[var(--color-navy-border)] overflow-hidden shadow-2xl relative"
+        style={{ height: '360px' }}
+      >
         <Map
           defaultCenter={stadiumLocation}
           defaultZoom={13}
