@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
-import { MapPin, Navigation, Car, Footprints, Bus } from 'lucide-react';
+import { MapPin, Navigation as NavigationIcon, Car, Footprints, Bus } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export default function Location() {
@@ -112,7 +112,7 @@ export default function Location() {
             </div>
             <div className="h-px w-8 bg-white/20"></div>
             <div className="flex items-center gap-2">
-              <Navigation size={14} />
+              <NavigationIcon size={14} />
               <span>Stadium</span>
             </div>
           </div>
@@ -131,7 +131,7 @@ export default function Location() {
       {/* Mini Hint */}
       <div className="bg-[#08111a] border border-[var(--color-navy-border)] p-4 rounded-2xl flex items-center gap-4">
         <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center shrink-0">
-          <Navigation size={20} className="text-[var(--color-accent-blue)]" />
+          <NavigationIcon size={20} className="text-[var(--color-accent-blue)]" />
         </div>
         <div>
           <h4 className="text-xs font-black text-white">Live Navigation</h4>

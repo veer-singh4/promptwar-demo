@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Link, useLocation, Navigate, Routes, Route } from 'react-router-dom';
 import { 
   Home as HomeIcon, Map as MapIcon, Clock as ClockIcon, ClipboardList, Info,
-  LayoutDashboard, BarChart2, AlertOctagon, LogOut, Sparkles
+  LayoutDashboard, BarChart2, AlertOctagon, LogOut, Sparkles, Navigation as NavigationIcon
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import ErrorBoundary from './ErrorBoundary';
@@ -28,7 +28,7 @@ export default function MobileLayout() {
 
   const attendeeNav = [
     { name: 'Home', path: '/', icon: HomeIcon },
-    { name: 'Travel', path: '/location', icon: Navigation },
+    { name: 'Travel', path: '/location', icon: NavigationIcon },
     { name: 'AI Assistant', path: '/assistant', icon: Sparkles },
     { name: 'Map', path: '/map', icon: MapIcon },
     { name: 'Help', path: '/help', icon: Info },
@@ -36,7 +36,7 @@ export default function MobileLayout() {
 
   const hostNav = [
     { name: 'Command', path: '/', icon: LayoutDashboard },
-    { name: 'Travel', path: '/location', icon: Navigation },
+    { name: 'Travel', path: '/location', icon: NavigationIcon },
     { name: 'AI Insights', path: '/assistant', icon: Sparkles },
     { name: 'Sys Map', path: '/map', icon: MapIcon },
     { name: 'Alerts', path: '/host-alerts', icon: AlertOctagon },
