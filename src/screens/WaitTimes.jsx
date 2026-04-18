@@ -57,7 +57,7 @@ const WaitTimes = () => {
         role="tablist" 
         aria-label="Filter facilities"
       >
-        {filterOptions.map(({ id }) => (
+        {filterOptions.map(({ id, icon: Icon }) => (
           <button 
             key={id}
             role="tab"
