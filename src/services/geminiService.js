@@ -53,14 +53,21 @@ export async function askGemini(userQuery, venueData, role, history = []) {
       ]
     });
 
+    // Transform history and ensure it's valid (must start with USER)
+    const validHistory = [];
+    let foundUser = false;
+    for (const msg of history) {
+      if (!foundUser && msg.role !== 'user') continue;
+      foundUser = true;
+      validHistory.push({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }],
+      });
+    }
+
     if (!chatSession || history.length === 0) {
       chatSession = model.startChat({
-        history: history
-          .filter((m, i) => !(i === 0 && m.role !== 'user')) // First msg must be user
-          .map(m => ({
-            role: m.role === 'user' ? 'user' : 'model',
-            parts: [{ text: m.text }],
-          })),
+        history: validHistory,
         generationConfig: {
           maxOutputTokens: 500,
           temperature: 0.7,
@@ -72,7 +79,9 @@ export async function askGemini(userQuery, venueData, role, history = []) {
     return result.response.text();
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return "I'm having trouble connecting to my brain. Please try again in a moment.";
+    // Self-healing: If it was a session error, reset for next time
+    chatSession = null;
+    return "I'm having a quick digital nap. Could you try asking me that again? I'll be fresh this time.";
   }
 }
 

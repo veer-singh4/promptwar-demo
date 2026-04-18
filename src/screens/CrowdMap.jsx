@@ -31,14 +31,18 @@ export default function CrowdMap() {
       </header>
 
       {/* Bespoke SVG Stadium Map */}
-      <div className="relative aspect-square w-full bg-[#08111a] rounded-[2.5rem] border border-[var(--color-navy-border)] shadow-2xl overflow-hidden group">
-        <svg viewBox="0 0 400 400" className="w-full h-full p-8 transform group-hover:scale-105 transition-transform duration-1000">
+      <div className="relative aspect-[4/3] w-full bg-[#08111a] rounded-[2rem] border border-[var(--color-navy-border)] shadow-2xl overflow-hidden group">
+        <svg 
+          viewBox="0 0 400 300" 
+          preserveAspectRatio="xMidYMid meet"
+          className="w-full h-full p-4 transform group-hover:scale-105 transition-transform duration-1000"
+        >
           {/* Outer Ring */}
-          <ellipse cx="200" cy="200" rx="180" ry="140" fill="transparent" stroke="#1b263b" strokeWidth="2" strokeDasharray="4 4" />
+          <ellipse cx="200" cy="150" rx="180" ry="120" fill="transparent" stroke="#1b263b" strokeWidth="2" strokeDasharray="4 4" />
           
           {/* Main Stadium Bowl */}
           <ellipse 
-            cx="200" cy="200" rx="150" ry="110" 
+            cx="200" cy="150" rx="150" ry="100" 
             fill="#050b14" 
             stroke="#2c3e50" 
             strokeWidth="8" 
@@ -46,14 +50,14 @@ export default function CrowdMap() {
           />
 
           {/* Zones Overlay */}
-          <path d="M100 200 Q100 130 200 130 T300 200" fill="none" stroke="#34495e" strokeWidth="1" strokeDasharray="2 4" />
-          <path d="M100 200 Q100 270 200 270 T300 200" fill="none" stroke="#34495e" strokeWidth="1" strokeDasharray="2 4" />
+          <path d="M100 150 Q100 80 200 80 T300 150" fill="none" stroke="#34495e" strokeWidth="1" strokeDasharray="2 4" />
+          <path d="M100 150 Q100 220 200 220 T300 150" fill="none" stroke="#34495e" strokeWidth="1" strokeDasharray="2 4" />
 
           {/* Gate Markers Interactivity */}
           {gates.map((g, i) => {
             const angle = (i / gates.length) * Math.PI * 2;
             const x = 200 + 150 * Math.cos(angle);
-            const y = 200 + 110 * Math.sin(angle);
+            const y = 150 + 100 * Math.sin(angle);
             const colorClass = getStatusColor(g.pct);
             
             return (
@@ -62,57 +66,33 @@ export default function CrowdMap() {
                 className="cursor-pointer group/gate" 
                 onClick={() => setSelected({ ...g, type: 'Gate', x, y })}
               >
-                {/* Glow Ring */}
-                <circle 
-                  cx={x} cy={y} r="12" 
-                  className={cn("opacity-0 group-hover/gate:opacity-20 transition-all", colorClass)} 
-                />
-                {/* Central Point */}
-                <circle 
-                  cx={x} cy={y} r="6" 
-                  className={cn("transition-all", colorClass)} 
-                />
-                {/* ID Label */}
-                <text 
-                  x={x} y={y - 12} 
-                  textAnchor="middle" 
-                  className="fill-slate-500 text-[8px] font-black uppercase tracking-tighter"
-                >
-                  {g.id}
-                </text>
+                <circle cx={x} cy={y} r="12" className={cn("opacity-0 group-hover/gate:opacity-20 transition-all", colorClass)} />
+                <circle cx={x} cy={y} r="6" className={cn("transition-all", colorClass)} />
+                <text x={x} y={y - 12} textAnchor="middle" className="fill-slate-500 text-[8px] font-black uppercase tracking-tighter">{g.id}</text>
               </g>
             );
           })}
 
           {/* Parking Area Representation */}
           {parking.map((p, i) => {
-            const x = 50 + (i * 100);
-            const y = 360;
+            const x = 80 + (i * 80);
+            const y = 270;
             const colorClass = getStatusColor(p.pct);
             
             return (
               <g 
                 key={p.id} 
                 className="cursor-pointer group/park" 
-                onClick={() => setSelected({ ...p, type: 'Parking', x, y: y-20 })}
+                onClick={() => setSelected({ ...p, type: 'Parking', x, y: y-10 })}
               >
-                <rect 
-                  x={x} y={y} width="40" height="20" rx="4"
-                  className={cn("transition-all opacity-40", colorClass)}
-                />
-                <text 
-                  x={x + 20} y={y + 13} 
-                  textAnchor="middle" 
-                  className="fill-white text-[8px] font-black"
-                >
-                  {p.id}
-                </text>
+                <rect x={x} y={y} width="35" height="15" rx="3" className={cn("transition-all opacity-40", colorClass)} />
+                <text x={x + 17} y={y + 10} textAnchor="middle" className="fill-white text-[7px] font-black">{p.id}</text>
               </g>
             );
           })}
 
           {/* Field / Pitch Center */}
-          <rect x="170" y="180" width="60" height="40" rx="2" fill="#1b263b" fillOpacity="0.3" stroke="#34495e" strokeWidth="1" />
+          <rect x="175" y="135" width="50" height="30" rx="1" fill="#1b263b" fillOpacity="0.3" stroke="#34495e" strokeWidth="1" />
         </svg>
 
         {/* Dynamic HUD for Selected Item */}

@@ -30,6 +30,7 @@ export default function MobileLayout() {
     { name: 'Home', path: '/', icon: HomeIcon },
     { name: 'Travel', path: '/location', icon: NavigationIcon },
     { name: 'AI Assistant', path: '/assistant', icon: Sparkles },
+    { name: 'Waits', path: '/wait-times', icon: ClockIcon },
     { name: 'Map', path: '/map', icon: MapIcon },
     { name: 'Help', path: '/help', icon: Info },
   ];

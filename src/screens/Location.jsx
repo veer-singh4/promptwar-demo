@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useVenue } from '../context/VenueContext';
 import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { MapPin, Navigation as NavigationIcon, Car, Footprints, Bus } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -6,6 +7,7 @@ import { cn } from '../lib/utils';
 export default function Location() {
   const map = useMap();
   const routesLibrary = useMapsLibrary('routes');
+  const { venueLocation } = useVenue();
   
   const [directionsService, setDirectionsService] = useState(null);
   const [directionsRenderer, setDirectionsRenderer] = useState(null);
@@ -13,7 +15,7 @@ export default function Location() {
   const [routeInfo, setRouteInfo] = useState(null);
   const [error, setError] = useState(null);
 
-  const stadiumLocation = { lat: 51.5560, lng: -0.2795 }; // Wembley Stadium
+  const stadiumLocation = { lat: venueLocation.lat, lng: venueLocation.lng };
 
   useEffect(() => {
     if (!routesLibrary || !map) return;
@@ -60,7 +62,7 @@ export default function Location() {
         }
       );
     }
-  }, [directionsService, directionsRenderer, travelMode, routesLibrary]);
+  }, [directionsService, directionsRenderer, travelMode, routesLibrary, venueLocation]);
 
   const modes = [
     { id: 'DRIVING', icon: Car },
@@ -72,7 +74,7 @@ export default function Location() {
     <div className="flex flex-col h-full space-y-4 animate-in fade-in duration-500">
       <header>
         <h1 className="text-2xl font-black text-white px-1">Getting Here</h1>
-        <p className="text-slate-400 text-xs px-1 uppercase tracking-widest font-bold">Wembley Stadium, London HA9 0WS</p>
+        <p className="text-slate-400 text-xs px-1 uppercase tracking-widest font-bold">{venueLocation.address}</p>
       </header>
 
       {/* Travel Mode Selector */}

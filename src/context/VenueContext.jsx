@@ -48,6 +48,11 @@ export const VenueProvider = ({ children }) => {
   const [weather] = useState(initialWeather);
   const [helpRequests, setHelpRequests] = useState([]);
   const [lastSosTime, setLastSosTime] = useState(0);
+  const [venueLocation, setVenueLocation] = useState({ 
+    address: "Wembley Stadium, London HA9 0WS",
+    lat: 51.5560, 
+    lng: -0.2795 
+  });
 
   const raiseEmergency = useCallback((type, location, details) => {
     // Rate limit: Max 1 SOS every 10 seconds per session
@@ -133,6 +138,8 @@ export const VenueProvider = ({ children }) => {
     vip,
     weather,
     helpRequests,
+    venueLocation,
+    setVenueLocation: (loc) => setVenueLocation(prev => ({ ...prev, ...loc })),
     setAlerts: updateAlerts,
     raiseEmergency,
     resolveEmergency,
