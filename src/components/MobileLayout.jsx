@@ -15,6 +15,7 @@ const WaitTimes = lazy(() => import('../screens/WaitTimes'));
 const MyPlan = lazy(() => import('../screens/MyPlan'));
 const Help = lazy(() => import('../screens/Help'));
 const Assistant = lazy(() => import('../screens/Assistant'));
+const LocationScreen = lazy(() => import('../screens/Location'));
 const HostDashboard = lazy(() => import('../screens/HostDashboard'));
 const HostMetrics = lazy(() => import('../screens/HostMetrics'));
 const HostAlerts = lazy(() => import('../screens/HostAlerts'));
@@ -27,17 +28,17 @@ export default function MobileLayout() {
 
   const attendeeNav = [
     { name: 'Home', path: '/', icon: HomeIcon },
-    { name: 'Map', path: '/map', icon: MapIcon },
+    { name: 'Travel', path: '/location', icon: Navigation },
     { name: 'AI Assistant', path: '/assistant', icon: Sparkles },
-    { name: 'Waits', path: '/wait-times', icon: ClockIcon },
+    { name: 'Map', path: '/map', icon: MapIcon },
     { name: 'Help', path: '/help', icon: Info },
   ];
 
   const hostNav = [
     { name: 'Command', path: '/', icon: LayoutDashboard },
-    { name: 'Sys Map', path: '/map', icon: MapIcon },
+    { name: 'Travel', path: '/location', icon: Navigation },
     { name: 'AI Insights', path: '/assistant', icon: Sparkles },
-    { name: 'Metrics', path: '/wait-times', icon: BarChart2 },
+    { name: 'Sys Map', path: '/map', icon: MapIcon },
     { name: 'Alerts', path: '/host-alerts', icon: AlertOctagon },
   ];
 
@@ -78,6 +79,7 @@ export default function MobileLayout() {
                 {/* Common Routes */}
                 <Route path="/map" element={<CrowdMap />} />
                 <Route path="/assistant" element={<Assistant />} />
+                <Route path="/location" element={<LocationScreen />} />
 
                 {role === 'HOST' ? (
                   <>

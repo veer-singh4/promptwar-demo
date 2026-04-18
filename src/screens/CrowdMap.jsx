@@ -1,210 +1,190 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useVenue } from '../context/VenueContext';
 import { useAuth } from '../context/AuthContext';
-import { Map, AdvancedMarker, InfoWindow, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
-import { cn } from '../lib/utils';
-import { Navigation } from 'lucide-react';
+import { cn, sanitize } from '../lib/utils';
+import { Info, Gauge, Timer, Users } from 'lucide-react';
 
-/**
- * Helper component to handle drawing directions on the map
- */
-const Directions = ({ destination, onDistanceLoaded }) => {
-  const map = useMap();
-  const routesLibrary = useMapsLibrary('routes');
-  const [directionsService, setDirectionsService] = useState();
-  const [directionsRenderer, setDirectionsRenderer] = useState();
-
-  useEffect(() => {
-    if (!routesLibrary || !map) return;
-    setDirectionsService(new routesLibrary.DirectionsService());
-    setDirectionsRenderer(new routesLibrary.DirectionsRenderer({ 
-      map,
-      suppressMarkers: true,
-      polylineOptions: {
-        strokeColor: '#3b82f6',
-        strokeWeight: 5,
-        strokeOpacity: 0.8
-      }
-    }));
-  }, [routesLibrary, map]);
-
-  useEffect(() => {
-    if (!directionsService || !directionsRenderer || !destination) {
-      if (directionsRenderer) directionsRenderer.setDirections({ routes: [] });
-      return;
-    }
-
-    directionsService.route({
-      origin: { lat: 51.5560, lng: -0.2795 }, // Static main transport hub
-      destination: destination,
-      travelMode: google.maps.TravelMode.WALKING,
-    }).then(response => {
-      directionsRenderer.setDirections(response);
-      const route = response.routes[0].legs[0];
-      if (onDistanceLoaded) onDistanceLoaded(route.duration.text);
-    }).catch(err => console.error("Navigation Error:", err));
-  }, [directionsService, directionsRenderer, destination]);
-
-  return null;
-};
-
-/**
- * CrowdMap component provides a visual overview of venue crowding using Google Maps.
- */
 export default function CrowdMap() {
   const { gates, parking } = useVenue();
   const { role } = useAuth();
-  const [selectedZone, setSelectedZone] = useState(null);
-  const [navTarget, setNavTarget] = useState(null);
-  const [walkTime, setWalkTime] = useState(null);
-  const [address, setAddress] = useState("Loading location...");
-  
-  const center = { lat: 51.5560, lng: -0.2795 }; 
-  const geocodingLibrary = useMapsLibrary('geocoding');
-
-  useEffect(() => {
-    if (!geocodingLibrary) return;
-    const geocoder = new geocodingLibrary.Geocoder();
-    geocoder.geocode({ location: center }, (results, status) => {
-      if (status === 'OK' && results[0]) {
-        setAddress(results[0].formatted_address);
-      }
-    });
-  }, [geocodingLibrary]);
+  const [selected, setSelected] = useState(null);
 
   const getStatusColor = (pct) => {
-    if (pct > 70) return 'bg-[#E24B4A]';
-    if (pct > 40) return 'bg-[#EF9F27]';
-    return 'bg-[#1D9E75]';
+    if (pct > 75) return 'text-red-500 fill-red-500 shadow-[0_0_10px_red]';
+    if (pct > 40) return 'text-amber-500 fill-amber-500 shadow-[0_0_10px_orange]';
+    return 'text-emerald-500 fill-emerald-500 shadow-[0_0_10px_green]';
   };
 
-  const mapOptions = {
-    disableDefaultUI: true,
-    zoomControl: true,
-    mapId: 'VENUE_IQ_DARK_MAP',
-    styles: [
-      { "elementType": "geometry", "stylers": [{ "color": "#0d1b2a" }] },
-      { "elementType": "labels.text.fill", "stylers": [{ "color": "#7489a8" }] },
-      { "elementType": "labels.text.stroke", "stylers": [{ "color": "#0d1b2a" }] },
-      { "featureType": "poi", "stylers": [{ "visibility": "off" }] },
-      { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#1b263b" }] },
-      { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#08111a" }] }
-    ]
+  const getStatusBg = (pct) => {
+    if (pct > 75) return 'bg-red-500/20 border-red-500/50 text-red-400';
+    if (pct > 40) return 'bg-amber-500/20 border-amber-500/50 text-amber-400';
+    return 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400';
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 flex flex-col h-full" role="region" aria-label="Crowd Density Map">
-      <header>
-        <h1 className="text-2xl font-black text-white leading-tight">
-          {role === 'HOST' ? 'Operations Overview' : 'Live Crowd Map'}
+    <div className="flex flex-col h-full space-y-6 animate-in fade-in duration-700 pb-10">
+      <header className="flex flex-col space-y-1">
+        <h1 className="text-2xl font-black text-white tracking-tight leading-none uppercase">
+          {role === 'HOST' ? 'Operations Intelligence' : 'Live Stadium Vitals'}
         </h1>
-        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">{address}</p>
+        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Wembley Strategic Overlook // Live Data Stream</p>
       </header>
 
-      <div 
-        className="bg-[#050b14] border-2 border-[var(--color-navy-border)] rounded-[2rem] h-[400px] relative shadow-2xl overflow-hidden shrink-0 mt-2"
-        role="application"
-        aria-label="Interactive Google Map of the venue"
-      >
-        <Map
-          defaultCenter={center}
-          defaultZoom={17}
-          options={mapOptions}
-          mapTypeId={'roadmap'}
-        >
-          <Directions 
-            destination={navTarget} 
-            onDistanceLoaded={(t) => setWalkTime(t)} 
+      {/* Bespoke SVG Stadium Map */}
+      <div className="relative aspect-square w-full bg-[#08111a] rounded-[2.5rem] border border-[var(--color-navy-border)] shadow-2xl overflow-hidden group">
+        <svg viewBox="0 0 400 400" className="w-full h-full p-8 transform group-hover:scale-105 transition-transform duration-1000">
+          {/* Outer Ring */}
+          <ellipse cx="200" cy="200" rx="180" ry="140" fill="transparent" stroke="#1b263b" strokeWidth="2" strokeDasharray="4 4" />
+          
+          {/* Main Stadium Bowl */}
+          <ellipse 
+            cx="200" cy="200" rx="150" ry="110" 
+            fill="#050b14" 
+            stroke="#2c3e50" 
+            strokeWidth="8" 
+            className="shadow-2xl"
           />
 
-          {/* Markers Logic */}
-          {gates.map((g, idx) => {
-             const pos = { lat: center.lat + (idx * 0.002 - 0.005), lng: center.lng + (idx * 0.001 - 0.002) };
-             return (
-              <AdvancedMarker
-                key={g.id}
-                position={pos}
-                onClick={() => {
-                  setSelectedZone({ ...g, type: 'Gate', pos });
-                  setNavTarget(null);
-                  setWalkTime(null);
-                }}
-              >
-                <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center border-2 border-white/20 shadow-xl transition-transform hover:scale-110",
-                  getStatusColor(g.pct)
-                )}>
-                  <span className="text-[10px] font-black text-white">{g.id}</span>
-                </div>
-              </AdvancedMarker>
-             );
-          })}
+          {/* Zones Overlay */}
+          <path d="M100 200 Q100 130 200 130 T300 200" fill="none" stroke="#34495e" strokeWidth="1" strokeDasharray="2 4" />
+          <path d="M100 200 Q100 270 200 270 T300 200" fill="none" stroke="#34495e" strokeWidth="1" strokeDasharray="2 4" />
 
-          {parking.map((p, idx) => {
-            const pos = { lat: center.lat - (idx * 0.003 - 0.004), lng: center.lng - (idx * 0.002 - 0.003) };
+          {/* Gate Markers Interactivity */}
+          {gates.map((g, i) => {
+            const angle = (i / gates.length) * Math.PI * 2;
+            const x = 200 + 150 * Math.cos(angle);
+            const y = 200 + 110 * Math.sin(angle);
+            const colorClass = getStatusColor(g.pct);
+            
             return (
-              <AdvancedMarker
-                key={p.id}
-                position={pos}
-                onClick={() => {
-                  setSelectedZone({ ...p, type: 'Parking', pos });
-                  setNavTarget(null);
-                  setWalkTime(null);
-                }}
+              <g 
+                key={g.id} 
+                className="cursor-pointer group/gate" 
+                onClick={() => setSelected({ ...g, type: 'Gate', x, y })}
               >
-                 <div className={cn(
-                  "w-12 h-8 rounded-lg flex items-center justify-center border-2 border-dashed border-white/30 shadow-lg",
-                  getStatusColor(p.pct)
-                )}>
-                  <span className="text-[9px] font-black text-white">{p.id}</span>
-                </div>
-              </AdvancedMarker>
+                {/* Glow Ring */}
+                <circle 
+                  cx={x} cy={y} r="12" 
+                  className={cn("opacity-0 group-hover/gate:opacity-20 transition-all", colorClass)} 
+                />
+                {/* Central Point */}
+                <circle 
+                  cx={x} cy={y} r="6" 
+                  className={cn("transition-all", colorClass)} 
+                />
+                {/* ID Label */}
+                <text 
+                  x={x} y={y - 12} 
+                  textAnchor="middle" 
+                  className="fill-slate-500 text-[8px] font-black uppercase tracking-tighter"
+                >
+                  {g.id}
+                </text>
+              </g>
             );
           })}
 
-          {selectedZone && (
-            <InfoWindow
-              position={selectedZone.pos}
-              onCloseClick={() => {
-                setSelectedZone(null);
-                setNavTarget(null);
-              }}
-            >
-              <div className="p-3 text-[#0d1b2a] min-w-[160px]">
-                <h3 className="font-bold border-b pb-1 mb-2 text-sm">{selectedZone.label}</h3>
-                <div className="space-y-1 mb-4">
-                  <p className="text-[10px]">Occupancy: <strong>{selectedZone.pct}%</strong></p>
-                  {walkTime && <p className="text-[10px] text-blue-600 font-bold">Estimated Arrival: {walkTime}</p>}
-                </div>
-                
-                <button 
-                  onClick={() => setNavTarget(selectedZone.pos)}
-                  className="w-full bg-[#3b82f6] text-white py-2 rounded-lg text-[10px] font-black flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors"
+          {/* Parking Area Representation */}
+          {parking.map((p, i) => {
+            const x = 50 + (i * 100);
+            const y = 360;
+            const colorClass = getStatusColor(p.pct);
+            
+            return (
+              <g 
+                key={p.id} 
+                className="cursor-pointer group/park" 
+                onClick={() => setSelected({ ...p, type: 'Parking', x, y: y-20 })}
+              >
+                <rect 
+                  x={x} y={y} width="40" height="20" rx="4"
+                  className={cn("transition-all opacity-40", colorClass)}
+                />
+                <text 
+                  x={x + 20} y={y + 13} 
+                  textAnchor="middle" 
+                  className="fill-white text-[8px] font-black"
                 >
-                  <Navigation size={12} /> GET DIRECTIONS
-                </button>
+                  {p.id}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Field / Pitch Center */}
+          <rect x="170" y="180" width="60" height="40" rx="2" fill="#1b263b" fillOpacity="0.3" stroke="#34495e" strokeWidth="1" />
+        </svg>
+
+        {/* Dynamic HUD for Selected Item */}
+        {selected && (
+          <div 
+            className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/80 to-transparent pointer-events-none"
+          >
+            <div className="flex justify-between items-start animate-in slide-in-from-top-4 duration-500">
+              <div className="space-y-1">
+                <span className="text-[10px] font-black text-[var(--color-accent-blue)] uppercase tracking-widest">{selected.type} Analysis</span>
+                <h3 className="text-2xl font-black text-white leading-none">{selected.label}</h3>
               </div>
-            </InfoWindow>
-          )}
-        </Map>
+              <div className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase border", getStatusBg(selected.pct))}>
+                {selected.pct}% LOADED
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Legend */}
+        <div className="absolute bottom-4 left-0 right-0 px-6 flex justify-around">
+           <div className="flex items-center gap-1.5 grayscale opacity-50">
+             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+             <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Optimal</span>
+           </div>
+           <div className="flex items-center gap-1.5 grayscale opacity-50">
+             <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+             <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Busy</span>
+           </div>
+           <div className="flex items-center gap-1.5 grayscale opacity-50">
+             <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+             <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Heavy</span>
+           </div>
+        </div>
       </div>
 
-      <div className="bg-[var(--color-navy-card)]/50 border border-[var(--color-navy-border)] rounded-2xl p-5 mt-auto shadow-lg backdrop-blur-sm">
-        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Occupancy Legend</h3>
-        <div className="flex justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#1D9E75] shadow-[0_0_8px_rgba(29,158,117,1)]"></div>
-            <span className="text-[11px] font-bold text-slate-300">Optimal</span>
+      {/* Selected Stats Card */}
+      <div className={cn(
+        "bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-[2rem] p-6 transition-all duration-500 shadow-xl min-h-[140px] flex flex-col justify-center",
+        !selected && "opacity-20"
+      )}>
+        {selected ? (
+          <div className="grid grid-cols-3 gap-4 animate-in fade-in zoom-in-95">
+             <div className="text-center">
+                <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-2 text-[var(--color-accent-blue)]">
+                  <Timer size={18} />
+                </div>
+                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">Wait Time</p>
+                <p className="text-lg font-black text-white">{selected.wait || '0'}m</p>
+             </div>
+             <div className="text-center">
+                <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-2 text-emerald-400">
+                  <Gauge size={18} />
+                </div>
+                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">Load Factor</p>
+                <p className="text-lg font-black text-white">{selected.pct}%</p>
+             </div>
+             <div className="text-center">
+                <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-2 text-amber-400">
+                  <Users size={18} />
+                </div>
+                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">Throughput</p>
+                <p className="text-lg font-black text-white">HI</p>
+             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#EF9F27] shadow-[0_0_8px_rgba(239,159,39,1)]"></div>
-            <span className="text-[11px] font-bold text-slate-300">Busy</span>
+        ) : (
+          <div className="text-center space-y-2">
+            <Info size={24} className="mx-auto text-slate-600 mb-2" />
+            <p className="text-sm font-bold text-slate-500">Select a zone on the map above</p>
+            <p className="text-[10px] text-slate-600 uppercase tracking-widest leading-none">To see real-time tactical intelligence</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#E24B4A] shadow-[0_0_8px_rgba(226,75,74,1)]"></div>
-            <span className="text-[11px] font-bold text-slate-300">Crowded</span>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
