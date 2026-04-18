@@ -1,22 +1,76 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useVenue } from '../context/VenueContext';
-import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
+import { Map, AdvancedMarker, Pin, useMapsLibrary, useMap } from '@vis.gl/react-google-maps';
 import { Save, Globe, MapPin, Search } from 'lucide-react';
 
 export default function VenueConfigCard() {
   const { venueLocation, setVenueLocation } = useVenue();
+  const map = useMap();
+  const placesLibrary = useMapsLibrary('places');
+  
   const [address, setAddress] = useState(venueLocation.address);
   const [lat, setLat] = useState(venueLocation.lat);
   const [lng, setLng] = useState(venueLocation.lng);
   const [suggestion, setSuggestion] = useState(venueLocation.suggestion || '');
+  
+  const inputRef = useRef(null);
+  const [autocomplete, setAutocomplete] = useState(null);
+
+  // Initialize Autocomplete
+  useEffect(() => {
+    if (!placesLibrary || !inputRef.current) return;
+
+    const options = {
+      fields: ['geometry', 'formatted_address', 'name'],
+      types: ['establishment', 'geocode']
+    };
+
+    const ac = new placesLibrary.Autocomplete(inputRef.current, options);
+    setAutocomplete(ac);
+
+    return () => {
+      if (ac) {
+        google.maps.event.clearInstanceListeners(ac);
+      }
+    };
+  }, [placesLibrary]);
+
+  // Handle place selection
+  useEffect(() => {
+    if (!autocomplete) return;
+
+    const listener = autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      
+      if (!place.geometry || !place.geometry.location) {
+        return;
+      }
+
+      const newLat = place.geometry.location.lat();
+      const newLng = place.geometry.location.lng();
+      
+      setLat(newLat);
+      setLng(newLng);
+      setAddress(place.formatted_address || place.name || '');
+
+      // Center map on new place
+      if (map) {
+        map.setCenter({ lat: newLat, lng: newLng });
+        map.setZoom(16);
+      }
+    });
+
+    return () => {
+      google.maps.event.removeListener(listener);
+    };
+  }, [autocomplete, map]);
 
   // Handle map click to set new coordinates
   const onMapClick = useCallback((e) => {
     if (e.detail.latLng) {
       setLat(e.detail.latLng.lat);
       setLng(e.detail.latLng.lng);
-      // In a real app, we would reverse-geocode the address here
-      setAddress(`Lat: ${e.detail.latLng.lat.toFixed(4)}, Lng: ${e.detail.latLng.lng.toFixed(4)}`);
+      setAddress(`Pinned Location: ${e.detail.latLng.lat.toFixed(4)}, ${e.detail.latLng.lng.toFixed(4)}`);
     }
   }, []);
 
@@ -30,16 +84,15 @@ export default function VenueConfigCard() {
         <h3 className="text-xs font-black text-[var(--color-accent-blue)] uppercase tracking-[0.2em] flex items-center gap-2">
           <Globe size={16} /> Venue Hub
         </h3>
-        <div className="text-[10px] font-bold text-slate-500 bg-slate-800/50 px-2 py-1 rounded-lg">LIVE SYNC</div>
+        <div className="text-[10px] font-bold text-slate-500 bg-slate-800/50 px-2 py-1 rounded-lg">LIVE OPS</div>
       </header>
       
-      {/* Dynamic Map Picker */}
       <div className="space-y-3">
-        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block px-1">STADIUM LOCATION (CLICK TO PICK)</label>
+        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block px-1">STADIUM LOCATION (PICK OR SEARCH)</label>
         <div className="h-48 w-full rounded-2xl border border-[var(--color-navy-border)] overflow-hidden shadow-inner relative group">
           <Map
-            defaultCenter={{ lat: parseFloat(lat), lng: parseFloat(lng) }}
-            defaultZoom={15}
+            center={{ lat: parseFloat(lat), lng: parseFloat(lng) }}
+            zoom={15}
             gestureHandling={'greedy'}
             disableDefaultUI={true}
             onClick={onMapClick}
@@ -49,22 +102,19 @@ export default function VenueConfigCard() {
               <Pin background={'#3b82f6'} glyphColor={'#fff'} borderColor={'#1d4ed8'} />
             </AdvancedMarker>
           </Map>
-          <div className="absolute bottom-2 left-2 right-2 bg-black/60 backdrop-blur-md p-2 rounded-lg text-[9px] text-white font-bold pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-            Click anywhere on the map to drop a new venue pin
-          </div>
         </div>
       </div>
 
       <div className="space-y-4">
         <div className="relative">
-          <label className="text-[10px] font-black text-slate-500 uppercase mb-2 block px-1">Display Address / Name</label>
+          <label className="text-[10px] font-black text-slate-500 uppercase mb-2 block px-1">Global Address Search</label>
           <div className="relative">
             <input 
+              ref={inputRef}
               type="text" 
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="w-full bg-[#08111a] border border-[var(--color-navy-border)] rounded-xl pl-10 pr-4 py-3 text-white text-xs focus:border-[var(--color-accent-blue)] outline-none font-bold"
-              placeholder="e.g., Wembley Stadium, London"
+              defaultValue={address}
+              className="w-full bg-[#08111a] border border-[var(--color-navy-border)] rounded-xl pl-10 pr-4 py-4 text-white text-xs focus:border-[var(--color-accent-blue)] outline-none font-bold placeholder:text-slate-700"
+              placeholder="Search for a stadium or address..."
             />
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
           </div>
@@ -108,7 +158,7 @@ export default function VenueConfigCard() {
         onClick={handleSave}
         className="w-full bg-[var(--color-accent-blue)] text-white font-black rounded-2xl py-4 text-xs flex items-center justify-center gap-2 hover:bg-blue-600 transition-all active:scale-95 shadow-xl shadow-blue-900/20"
       >
-        <Save size={16} /> PUSH TO ALL DEVICES
+        <Save size={16} /> BROADCAST TO ALL ATTENDEES
       </button>
     </div>
   );

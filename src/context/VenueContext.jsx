@@ -49,10 +49,10 @@ export const VenueProvider = ({ children }) => {
   const [helpRequests, setHelpRequests] = useState([]);
   const [lastSosTime, setLastSosTime] = useState(0);
   const [venueLocation, setVenueLocation] = useState({ 
-    address: "Wembley Stadium, London HA9 0WS",
-    lat: 51.5560, 
-    lng: -0.2795,
-    suggestion: "Follow the blue line on the map above to reach the main entrance."
+    address: "Narendra Modi Stadium, Motera, Ahmedabad, Gujarat 380005",
+    lat: 23.0919, 
+    lng: 72.5975,
+    suggestion: "Follow the East Stand signs for optimized entry via Gate 1."
   });
 
   const raiseEmergency = useCallback((type, location, details) => {
