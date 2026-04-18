@@ -4,7 +4,19 @@
 
 ---
 
-## 🏆 Hackathon Spotlight
+## 🔗 Live Demo & Testing
+
+Experience VenueIQ instantly on Google Cloud Run. The application adapts its interface based on your login credentials.
+
+**Live Application URL**: [https://promptwar-demo-781746952048.us-central1.run.app](https://promptwar-demo-781746952048.us-central1.run.app)
+
+### Demo Credentials:
+- **Host / Manager View** (Command Dashboard):
+  - Login ID: `HostAdmin` (or any string containing "Host")
+- **Attendee / Fan View** (Navigation & AI):
+  - Login ID: `TX-123` (or any generic ticket ID)
+
+---
 - **Google Services**: 
   - **Gemini 1.5 Flash**: Context-aware assistant for routing and incident drafting.
   - **Google Maps (React)**: Live-tracked markers, custom dark-mode styling, and interactive zone analysis.
