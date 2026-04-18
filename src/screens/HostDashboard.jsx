@@ -1,186 +1,134 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useVenue } from '../context/VenueContext';
 import { trackBroadcast } from '../services/analyticsService';
-import { ShieldAlert, AlertOctagon, Bell, Send, CheckCircle, Activity, Users, Truck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  ShieldAlert, AlertOctagon, Bell, Send, CheckCircle, 
+  Activity, Users, Truck, Sparkles, BarChart3 
+} from 'lucide-react';
 import { cn, sanitize } from '../lib/utils';
 import SimulationControls from '../components/SimulationControls';
 import AtmosphereCard from '../components/AtmosphereCard';
 
-/**
- * HostDashboard component: The central Command and Control interface for venue managers.
- */
 export default function HostDashboard() {
   const { gates, parking, setAlerts, helpRequests, resolveEmergency } = useVenue();
   const [broadcastText, setBroadcastText] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const navigate = useNavigate();
   
-  // Memoize critical indicators
   const metrics = useMemo(() => {
     const criticalGates = gates.filter(g => g.pct > 70).length;
     const criticalPark = parking.filter(p => p.pct > 90).length;
     const avgGateLoad = Math.round(gates.reduce((s, g) => s + g.pct, 0) / gates.length);
     const avgParkLoad = Math.round(parking.reduce((s, p) => s + p.pct, 0) / parking.length);
     const systemStressed = criticalGates > 0 || criticalPark > 0 || helpRequests.length > 0;
-    
     return { criticalGates, criticalPark, avgGateLoad, avgParkLoad, systemStressed };
   }, [gates, parking, helpRequests]);
 
   const { criticalGates, avgGateLoad, avgParkLoad, systemStressed } = metrics;
 
-  /**
-   * Triggers a system-wide broadcast alert to all clients
-   */
   const triggerBroadcast = useCallback(() => {
     const cleanText = sanitize(broadcastText.trim());
     if(!cleanText) return;
-
-    setAlerts(prev => [
-      { id: Math.random().toString(36).substr(2, 9), type: 'warn', text: cleanText }, 
-      ...prev
-    ]);
-    
+    setAlerts(prev => [{ id: Math.random().toString(36).substr(2, 9), type: 'warn', text: cleanText }, ...prev]);
     trackBroadcast(cleanText);
     setBroadcastText('');
     setShowToast(true); 
     setTimeout(() => setShowToast(false), 3000);
   }, [broadcastText, setAlerts]);
 
+  const operationalCards = [
+    { title: 'AI Insights', desc: 'Strategic system analysis', icon: Sparkles, path: '/assistant', color: 'text-purple-400 bg-purple-500/10' },
+    { title: 'Metrics', desc: 'Real-time facility data', icon: BarChart3, path: '/metrics', color: 'text-blue-400 bg-blue-500/10' },
+  ];
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-8" role="region" aria-label="Venue Command Center">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-8">
       <header className="flex justify-between items-start">
          <div>
-          <h1 className="text-2xl font-black text-white flex items-center gap-2 tracking-tight">
+          <h1 className="text-2xl font-black text-white flex items-center gap-2 tracking-tight uppercase">
             Command Center <Activity size={18} className="text-[var(--color-status-amber)] animate-pulse" />
           </h1>
-          <p className="text-slate-400 text-sm font-medium">Global operations and attendee safety hub.</p>
+          <p className="text-slate-400 text-sm font-bold">Venue Management Hub</p>
          </div>
          <div className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-sm">
             <div className="w-2 h-2 rounded-full bg-[var(--color-status-green)] animate-pulse"></div>
-            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Sys Ready</span>
+            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">LIVE</span>
          </div>
       </header>
 
-      {/* NEW: Simulation Controls for Judges */}
+      {/* Operational Quick Actions */}
+      <div className="grid grid-cols-2 gap-3">
+        {operationalCards.map(card => (
+          <button 
+            key={card.title}
+            onClick={() => navigate(card.path)}
+            className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] p-4 rounded-2xl flex flex-col items-center text-center group active:scale-[0.98] transition-all hover:border-slate-600"
+          >
+            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center mb-3", card.color)}>
+              <card.icon size={20} />
+            </div>
+            <h3 className="text-white font-black text-[10px] uppercase tracking-wider">{card.title}</h3>
+            <p className="text-[9px] text-slate-500 font-bold mt-1">{card.desc}</p>
+          </button>
+        ))}
+      </div>
+
       <SimulationControls />
 
       {/* System Status Banner */}
       <section 
         className={cn(
-          "rounded-2xl border-2 p-6 shadow-2xl transition-all duration-700 backdrop-blur-md", 
-          systemStressed 
-            ? "bg-[var(--color-status-red)]/5 border-[var(--color-status-red)]/50 text-[var(--color-status-red)]" 
-            : "bg-[var(--color-status-green)]/5 border-[var(--color-status-green)]/50 text-[var(--color-status-green)]"
+          "rounded-2xl border-2 p-5 shadow-2xl transition-all duration-700", 
+          systemStressed ? "bg-red-500/10 border-red-500/50 text-red-500" : "bg-green-500/10 border-green-500/50 text-green-500"
         )}
-        role="status"
-        aria-live="polite"
       >
-        <div className="flex justify-between items-center mb-3">
-          <span className="font-black text-xl tracking-tighter uppercase">{systemStressed ? 'SYSTEM STATUS: STRESSED' : 'SYSTEM STATUS: OPTIMAL'}</span>
-          <AlertOctagon size={28} className={cn(systemStressed ? "animate-bounce" : "")} />
+        <div className="flex justify-between items-center mb-2">
+          <span className="font-black text-lg tracking-tighter uppercase">{systemStressed ? 'STATUS: STRESSED' : 'STATUS: OPTIMAL'}</span>
+          <AlertOctagon size={24} className={cn(systemStressed ? "animate-bounce" : "")} />
         </div>
-        <p className="text-xs font-bold opacity-80 uppercase tracking-widest">
-          {criticalGates} Gates saturated • {helpRequests.length} Active emergencies
+        <p className="text-[10px] font-black uppercase tracking-widest opacity-80">
+          {criticalGates} saturated gates • {helpRequests.length} active emergency
         </p>
       </section>
 
-      {/* Real-time Emergency Feed */}
-      {helpRequests.length > 0 && (
-        <section className="bg-[var(--color-status-red)]/5 border border-[var(--color-status-red)]/30 rounded-2xl p-6 space-y-4" aria-labelledby="sos-header">
-          <h3 id="sos-header" className="text-xs font-black text-[var(--color-status-red)] uppercase tracking-[0.2em] px-1">Live Priority Incidents</h3>
-          <div className="space-y-3" role="log" aria-relevant="additions">
-             {helpRequests.map(req => (
-               <div key={req.id} className="bg-[var(--color-navy-card)]/80 backdrop-blur-sm border border-[var(--color-navy-border)] rounded-2xl p-4 flex justify-between items-center animate-in slide-in-from-right-4 transition-all hover:bg-slate-800/80">
-                 <div className="flex-1 pr-4">
-                   <div className="flex items-center gap-2 mb-1">
-                     <span className="text-sm font-black text-white">{req.type}</span>
-                     <span className="text-[9px] font-black bg-[var(--color-status-red)] text-white px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-sm">{req.timestamp}</span>
-                   </div>
-                   <div className="flex items-center gap-1.5 text-slate-400">
-                     <Users size={12} />
-                     <p className="text-xs font-bold">{req.location}</p>
-                   </div>
-                   {req.details && <p className="text-xs text-slate-300 italic mt-2 font-medium opacity-80 border-l-2 border-slate-700 pl-3">"{req.details}"</p>}
-                 </div>
-                 <button 
-                  onClick={() => resolveEmergency(req.id)} 
-                  className="w-12 h-12 rounded-2xl bg-[var(--color-status-green)] flex items-center justify-center text-white shrink-0 hover:bg-green-600 active:scale-90 transition-all shadow-lg shadow-green-900/20"
-                  aria-label={`Resolve incident at ${req.location}`}
-                 >
-                   <CheckCircle size={22} strokeWidth={2.5} />
-                 </button>
-               </div>
-             ))}
-          </div>
-        </section>
-      )}
-
       {/* Broadcast Control Wrapper */}
-      <section className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-2xl p-6 shadow-xl" aria-labelledby="broadcast-title">
-        <h3 id="broadcast-title" className="text-xs font-black text-[var(--color-status-amber)] uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-          <Send size={16}/> Push PA Alert
+      <section className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-2xl p-5 shadow-xl">
+        <h3 className="text-[10px] font-black text-[var(--color-status-amber)] uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+          <Send size={14}/> SYSTEM BROADCAST
         </h3>
         <textarea 
           value={broadcastText}
           onChange={(e)=>setBroadcastText(e.target.value)}
-          className="w-full bg-[#08111a] border border-[var(--color-navy-border)] rounded-xl p-4 text-white placeholder-slate-600 focus:outline-none focus:border-[var(--color-status-amber)] focus:ring-4 focus:ring-[var(--color-status-amber)]/5 mb-4 shadow-inner min-h-[100px] font-medium"
-          placeholder="Enter emergency instructions for all attendees..."
-          aria-label="Broadcast message text"
+          className="w-full bg-[#08111a] border border-[var(--color-navy-border)] rounded-xl p-4 text-white placeholder-slate-600 focus:outline-none focus:border-[var(--color-status-amber)] mb-4 min-h-[80px] text-sm font-bold"
+          placeholder="Enter emergency instructions..."
         />
         <button 
           onClick={triggerBroadcast} 
           disabled={!broadcastText.trim()}
-          className="w-full bg-[var(--color-status-amber)] disabled:opacity-50 text-[var(--color-navy-base)] font-black rounded-xl py-4 hover:bg-yellow-500 transition-all shadow-xl shadow-yellow-900/10 active:scale-[0.98] flex items-center justify-center gap-2"
+          className="w-full bg-[var(--color-status-amber)] disabled:opacity-50 text-[var(--color-navy-base)] font-black rounded-xl py-4 hover:bg-yellow-500 transition-all active:scale-[0.98] text-xs"
         >
-          {showToast ? <CheckCircle size={20} className="animate-in zoom-in" /> : "DISPATCH SYSTEM BROADCAST"}
+          {showToast ? "SENT SUCCESS" : "DISPATCH PA ALERT"}
         </button>
       </section>
 
-      {/* Live Operational Metrics */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <AtmosphereCard />
-        <div className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-2xl p-6 shadow-xl space-y-4">
-          <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] px-1">VIP Sector Loads</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-bold text-white">Platinum Lounge</span>
-              <span className="text-sm font-black text-orange-400">45%</span>
-            </div>
-            <div className="h-1.5 w-full bg-[#08111a] rounded-full overflow-hidden">
-              <div className="h-full bg-orange-500" style={{width: '45%'}}></div>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-bold text-white">Executive Suites</span>
-              <span className="text-sm font-black text-red-400">72%</span>
-            </div>
-            <div className="h-1.5 w-full bg-[#08111a] rounded-full overflow-hidden">
-              <div className="h-full bg-red-500" style={{width: '72%'}}></div>
-            </div>
+      {/* Performance Summary */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] p-4 rounded-2xl">
+          <div className="flex items-center gap-2 mb-2 text-slate-500">
+            <Users size={12} />
+            <h4 className="text-[9px] font-black uppercase tracking-widest">Avg Gate</h4>
           </div>
+          <p className="text-2xl font-black text-white">{avgGateLoad}%</p>
         </div>
-      </section>
-
-      <section className="grid grid-cols-2 gap-4" aria-label="Quick metrics">
-        <div className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-2xl p-5 shadow-lg group transition-colors hover:border-slate-600">
-          <div className="flex items-center gap-2 mb-2">
-            <Users size={14} className="text-slate-500" />
-            <h3 className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Mean Gate Load</h3>
+        <div className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] p-4 rounded-2xl">
+          <div className="flex items-center gap-2 mb-2 text-slate-500">
+            <Truck size={12} />
+            <h4 className="text-[9px] font-black uppercase tracking-widest">Avg Park</h4>
           </div>
-          <p className="text-3xl font-black text-white tracking-tighter">{avgGateLoad}%</p>
-          <div className="mt-3 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-            <div className={cn("h-full transition-all duration-1000", avgGateLoad > 70 ? "bg-[var(--color-status-red)]" : "bg-[var(--color-status-green)]")} style={{width: `${avgGateLoad}%`}}></div>
-          </div>
+          <p className="text-2xl font-black text-white">{avgParkLoad}%</p>
         </div>
-        <div className="bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] rounded-2xl p-5 shadow-lg group transition-colors hover:border-slate-600">
-          <div className="flex items-center gap-2 mb-2">
-            <Truck size={14} className="text-slate-500" />
-            <h3 className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Mean Park Load</h3>
-          </div>
-          <p className="text-3xl font-black text-white tracking-tighter">{avgParkLoad}%</p>
-          <div className="mt-3 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-            <div className={cn("h-full transition-all duration-1000", avgParkLoad > 70 ? "bg-[var(--color-status-red)]" : "bg-[var(--color-status-green)]")} style={{width: `${avgParkLoad}%`}}></div>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
   );
 }

@@ -23,7 +23,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+      <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['marker', 'routes', 'places']}>
         <AuthProvider>
           <VenueProvider>
             <BrowserRouter>
