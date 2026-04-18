@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
-import { MapPin, Navigation, Car, Walking, Bus } from 'lucide-react';
+import { MapPin, Navigation, Car, Footprints, Bus } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export default function Location() {
@@ -31,7 +31,7 @@ export default function Location() {
   }, [routesLibrary, map]);
 
   useEffect(() => {
-    if (!directionsService || !directionsRenderer) return;
+    if (!directionsService || !directionsRenderer || !routesLibrary) return;
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -44,7 +44,7 @@ export default function Location() {
           directionsService.route({
             origin: origin,
             destination: stadiumLocation,
-            travelMode: google.maps.TravelMode[travelMode],
+            travelMode: routesLibrary.TravelMode[travelMode],
           }, (result, status) => {
             if (status === 'OK') {
               directionsRenderer.setDirections(result);
@@ -60,11 +60,11 @@ export default function Location() {
         }
       );
     }
-  }, [directionsService, directionsRenderer, travelMode]);
+  }, [directionsService, directionsRenderer, travelMode, routesLibrary]);
 
   const modes = [
     { id: 'DRIVING', icon: Car },
-    { id: 'WALKING', icon: Walking },
+    { id: 'WALKING', icon: Footprints },
     { id: 'TRANSIT', icon: Bus },
   ];
 
