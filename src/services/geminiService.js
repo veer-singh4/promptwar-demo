@@ -55,10 +55,12 @@ export async function askGemini(userQuery, venueData, role, history = []) {
 
     if (!chatSession || history.length === 0) {
       chatSession = model.startChat({
-        history: history.map(m => ({
-          role: m.role === 'user' ? 'user' : 'model',
-          parts: [{ text: m.text }],
-        })),
+        history: history
+          .filter((m, i) => !(i === 0 && m.role !== 'user')) // First msg must be user
+          .map(m => ({
+            role: m.role === 'user' ? 'user' : 'model',
+            parts: [{ text: m.text }],
+          })),
         generationConfig: {
           maxOutputTokens: 500,
           temperature: 0.7,
