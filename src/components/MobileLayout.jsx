@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useLocation, Navigate, Routes, Route } from 'react-router-dom';
 import { 
@@ -23,8 +23,16 @@ const HostAlerts = lazy(() => import('../screens/HostAlerts'));
 export default function MobileLayout() {
   const { role, logout } = useAuth();
   const location = useLocation();
+  const mainRef = useRef(null);
 
   if (!role) return <Navigate to="/login" replace />;
+
+  // Automatic Scroll to Top on path change
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
 
   const attendeeNav = [
     { name: 'Home', path: '/', icon: HomeIcon },
@@ -45,30 +53,34 @@ export default function MobileLayout() {
   return (
     <div className="flex flex-col h-screen h-[100dvh] overflow-hidden font-sans bg-[var(--color-navy-base)] text-slate-50 relative">
       
-      {/* Top micro-bar showing auth state */}
+      {/* Top indicator bar */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-[var(--color-navy-border)] z-[100]">
         <div className={cn("h-full transition-all duration-1000", role === 'HOST' ? "bg-[var(--color-status-amber)]" : "bg-[var(--color-accent-blue)]")} style={{width: '100%'}}></div>
       </div>
 
-      {/* Logout bubble */}
+      {/* Profile/Logout */}
       <button 
         onClick={logout} 
-        className="fixed top-4 right-4 z-[100] bg-[var(--color-navy-card)]/80 backdrop-blur-md border border-[var(--color-navy-border)] w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-white transition-all cursor-pointer shadow-lg active:scale-95" 
-        title="Log Out"
+        className="fixed top-4 right-4 z-[100] bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer shadow-xl active:scale-95" 
       >
         <LogOut size={16} />
       </button>
 
-      <main id="main-content" className="flex-1 overflow-y-auto z-10 p-4 pb-24 pt-4" role="main">
-        <div className="max-w-md mx-auto h-full pt-12">
+      {/* Dynamic Content Area */}
+      <main 
+        ref={mainRef}
+        id="main-content" 
+        className="flex-1 overflow-y-auto z-10 p-4 pb-32 pt-8" 
+        role="main"
+      >
+        <div className="max-w-md mx-auto">
           <ErrorBoundary>
             <Suspense fallback={
-              <div className="flex items-center justify-center h-full">
+              <div className="flex items-center justify-center min-h-[50vh]">
                 <div className="w-8 h-8 border-4 border-[var(--color-accent-blue)] border-t-transparent rounded-full animate-spin"></div>
               </div>
             }>
               <Routes>
-                {/* Common Routes */}
                 <Route path="/map" element={<CrowdMap />} />
                 <Route path="/assistant" element={<Assistant />} />
                 <Route path="/location" element={<LocationScreen />} />
@@ -95,7 +107,7 @@ export default function MobileLayout() {
         </div>
       </main>
 
-      {/* Bottom Nav - Ensured high z-index and pointer interaction */}
+      {/* Professional Bottom Navigation */}
       <nav className="fixed bottom-0 w-full bg-[var(--color-navy-card)] border-t border-[var(--color-navy-border)] z-[200] left-0 shadow-[0_-10px_40px_rgba(0,0,0,0.6)]" role="navigation">
         <div className="grid grid-cols-4 items-center h-16 pb-safe max-w-md mx-auto px-2">
           {currentNav.map((item) => {
@@ -108,17 +120,17 @@ export default function MobileLayout() {
                 key={item.name} 
                 to={item.path} 
                 className={cn(
-                  "flex flex-col items-center justify-center h-full space-y-1 group relative transition-all cursor-pointer",
+                  "flex flex-col items-center justify-center h-full space-y-1 block relative transition-all",
                   isActive ? accentCls : "text-slate-400 hover:text-slate-200"
                 )}
               >
                 <div className={cn(
-                  "p-1.5 rounded-xl transition-all",
-                  isActive ? "bg-white/5" : "group-hover:bg-white/5"
+                  "p-1.5 rounded-xl",
+                  isActive ? "bg-white/5" : "hover:bg-white/5"
                 )}>
                   <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
                 </div>
-                <span className="text-[9px] font-black tracking-tighter uppercase">{item.name}</span>
+                <span className="text-[9px] font-black uppercase tracking-tighter">{item.name}</span>
                 {isActive && <div className={cn("absolute bottom-0 w-8 h-1 rounded-t-full", role === 'HOST' ? "bg-[var(--color-status-amber)]" : "bg-[var(--color-accent-blue)]")}></div>}
               </Link>
             );
