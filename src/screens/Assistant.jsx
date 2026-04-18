@@ -41,7 +41,7 @@ export default function Assistant() {
       const response = await askGemini(userMsg, venueData, role, messages);
       setMessages(prev => [...prev, { role: 'assistant', text: response, timestamp: new Date() }]);
       trackAIQuery(userMsg.length, true);
-    } catch (err) {
+    } catch {
       setMessages(prev => [...prev, { role: 'assistant', text: "I'm sorry, I'm having trouble processing that right now.", timestamp: new Date() }]);
       trackAIQuery(userMsg.length, false);
     } finally {

@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useVenue } from '../context/VenueContext';
 import { trackBroadcast } from '../services/analyticsService';
 import { Send, CheckCircle, Radio } from 'lucide-react';
-import { cn, sanitize } from '../lib/utils';
+import { sanitize } from '../lib/utils';
 
 /**
  * HostAlerts component: Dedicated interface for system-wide communications.

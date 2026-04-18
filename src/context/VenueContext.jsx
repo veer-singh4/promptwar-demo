@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { sanitize } from '../lib/utils';
 
@@ -43,8 +44,8 @@ export const VenueProvider = ({ children }) => {
   const [parking, setParking] = useState(initialParking);
   const [facilities, setFacilities] = useState(initialFacilities);
   const [alerts, setAlerts] = useState(initialAlerts);
-  const [vip, setVip] = useState(initialVip);
-  const [weather, setWeather] = useState(initialWeather);
+  const [vip] = useState(initialVip);
+  const [weather] = useState(initialWeather);
   const [helpRequests, setHelpRequests] = useState([]);
   const [lastSosTime, setLastSosTime] = useState(0);
 

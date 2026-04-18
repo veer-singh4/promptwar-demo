@@ -8,7 +8,7 @@ import { cn } from '../lib/utils';
  * HostMetrics component: Provides deep-dive data analysis for facility owners.
  */
 export default function HostMetrics() {
-  const { facilities, parking } = useVenue();
+  const { facilities } = useVenue();
 
   // Simulated trend data for the chart
   const trendData = [

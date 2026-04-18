@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import DOMPurify from 'dompurify';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 /**
  * Merges Tailwind classes and handles conflicts

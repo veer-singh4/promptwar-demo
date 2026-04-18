@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useVenue } from '../context/VenueContext';
 import { useAuth } from '../context/AuthContext';
-import { Map, AdvancedMarker, InfoWindow, useMap } from '@vis.gl/react-google-maps';
+import { Map, AdvancedMarker, InfoWindow } from '@vis.gl/react-google-maps';
 import { cn } from '../lib/utils';
 
 /**
@@ -60,10 +60,10 @@ export default function CrowdMap() {
           mapTypeId={'roadmap'}
         >
           {/* Dynamic Gate Markers */}
-          {gates.map(g => (
+          {gates.map((g, idx) => (
             <AdvancedMarker
               key={g.id}
-              position={{ lat: center.lat + (Math.random() - 0.5) * 0.005, lng: center.lng + (Math.random() - 0.5) * 0.005 }}
+              position={{ lat: center.lat + (idx * 0.002 - 0.005), lng: center.lng + (idx * 0.001 - 0.002) }}
               onClick={() => setSelectedZone({ ...g, type: 'Gate' })}
             >
               <div className={cn(
@@ -76,10 +76,10 @@ export default function CrowdMap() {
           ))}
 
           {/* Dynamic Parking Markers */}
-          {parking.map(p => (
+          {parking.map((p, idx) => (
             <AdvancedMarker
               key={p.id}
-              position={{ lat: center.lat + (Math.random() - 0.5) * 0.008, lng: center.lng + (Math.random() - 0.5) * 0.008 }}
+              position={{ lat: center.lat - (idx * 0.003 - 0.004), lng: center.lng - (idx * 0.002 - 0.003) }}
               onClick={() => setSelectedZone({ ...p, type: 'Parking' })}
             >
                <div className={cn(

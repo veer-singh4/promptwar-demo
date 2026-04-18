@@ -25,7 +25,7 @@ export default function HostDashboard() {
     return { criticalGates, criticalPark, avgGateLoad, avgParkLoad, systemStressed };
   }, [gates, parking, helpRequests]);
 
-  const { criticalGates, criticalPark, avgGateLoad, avgParkLoad, systemStressed } = metrics;
+  const { criticalGates, avgGateLoad, avgParkLoad, systemStressed } = metrics;
 
   /**
    * Triggers a system-wide broadcast alert to all clients

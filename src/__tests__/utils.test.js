@@ -9,7 +9,9 @@ describe('VenueIQ Utilities', () => {
     });
 
     it('should handle conditional classes', () => {
-      expect(cn('p-4', true && 'text-red', false && 'bg-blue')).toBe('p-4 text-red');
+      const isRed = true;
+      const isBlue = false;
+      expect(cn('p-4', isRed && 'text-red', isBlue && 'bg-blue')).toBe('p-4 text-red');
     });
   });
 

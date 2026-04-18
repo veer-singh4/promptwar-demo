@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { sanitize } from '../lib/utils';
 
@@ -6,7 +7,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null); // 'HOST' or 'ATTENDEE'
   const [user, setUser] = useState(null);
-  const [lastActivity, setLastActivity] = useState(Date.now());
+  const [lastActivity, setLastActivity] = useState(() => Date.now());
 
   const logout = useCallback(() => {
     setRole(null);
