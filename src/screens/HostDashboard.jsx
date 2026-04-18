@@ -5,7 +5,6 @@ import { ShieldAlert, AlertOctagon, Bell, Send, CheckCircle, Activity, Users, Tr
 import { cn, sanitize } from '../lib/utils';
 import SimulationControls from '../components/SimulationControls';
 import AtmosphereCard from '../components/AtmosphereCard';
-import VenueConfigCard from '../components/VenueConfigCard';
 
 /**
  * HostDashboard component: The central Command and Control interface for venue managers.
@@ -61,11 +60,8 @@ export default function HostDashboard() {
          </div>
       </header>
 
-      {/* NEW: Simulation & Venue Controls */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <SimulationControls />
-        <VenueConfigCard />
-      </section>
+      {/* NEW: Simulation Controls for Judges */}
+      <SimulationControls />
 
       {/* System Status Banner */}
       <section 

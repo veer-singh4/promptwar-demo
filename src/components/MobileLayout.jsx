@@ -28,8 +28,9 @@ export default function MobileLayout() {
 
   const attendeeNav = [
     { name: 'Home', path: '/', icon: HomeIcon },
+    { name: 'Plan', path: '/plan', icon: ClipboardList },
     { name: 'Travel', path: '/location', icon: NavigationIcon },
-    { name: 'AI Assistant', path: '/assistant', icon: Sparkles },
+    { name: 'AI', path: '/assistant', icon: Sparkles },
     { name: 'Waits', path: '/wait-times', icon: ClockIcon },
     { name: 'Map', path: '/map', icon: MapIcon },
     { name: 'Help', path: '/help', icon: Info },
@@ -39,6 +40,7 @@ export default function MobileLayout() {
     { name: 'Command', path: '/', icon: LayoutDashboard },
     { name: 'Travel', path: '/location', icon: NavigationIcon },
     { name: 'AI Insights', path: '/assistant', icon: Sparkles },
+    { name: 'Metrics', path: '/wait-times', icon: BarChart2 },
     { name: 'Sys Map', path: '/map', icon: MapIcon },
     { name: 'Alerts', path: '/host-alerts', icon: AlertOctagon },
   ];

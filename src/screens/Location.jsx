@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useVenue } from '../context/VenueContext';
 import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
-import { MapPin, Navigation as NavigationIcon, Car, Footprints, Bus } from 'lucide-react';
+import { MapPin, Navigation as NavigationIcon, Car, Footprints, Bus, Route } from 'lucide-react';
 import { cn } from '../lib/utils';
+import VenueConfigCard from '../components/VenueConfigCard';
 
 export default function Location() {
+  const { role } = useAuth();
   const map = useMap();
   const routesLibrary = useMapsLibrary('routes');
   const { venueLocation } = useVenue();
@@ -16,6 +19,22 @@ export default function Location() {
   const [error, setError] = useState(null);
 
   const stadiumLocation = { lat: venueLocation.lat, lng: venueLocation.lng };
+
+  // For host, do not load map tracking, just show the config
+  if (role === 'HOST') {
+    return (
+      <div className="flex flex-col h-full space-y-4 animate-in fade-in duration-500 pb-10">
+        <header className="mb-4">
+          <h1 className="text-2xl font-black text-white px-1 flex items-center gap-2">
+            <Route size={24} className="text-[var(--color-status-amber)]" />
+            Travel Settings
+          </h1>
+          <p className="text-slate-400 text-xs px-1 uppercase tracking-widest font-bold">Configure attendee routing</p>
+        </header>
+        <VenueConfigCard />
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (!routesLibrary || !map) return;
@@ -137,7 +156,7 @@ export default function Location() {
         </div>
         <div>
           <h4 className="text-xs font-black text-white">Live Navigation</h4>
-          <p className="text-[10px] text-slate-500 leading-tight">Follow the blue line on the map above to reach the main entrance.</p>
+          <p className="text-[10px] text-slate-500 leading-tight">{venueLocation.suggestion || "Follow the blue line on the map above to reach the main entrance."}</p>
         </div>
       </div>
     </div>

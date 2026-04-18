@@ -7,9 +7,10 @@ export default function VenueConfigCard() {
   const [address, setAddress] = useState(venueLocation.address);
   const [lat, setLat] = useState(venueLocation.lat);
   const [lng, setLng] = useState(venueLocation.lng);
+  const [suggestion, setSuggestion] = useState(venueLocation.suggestion || '');
 
   const handleSave = () => {
-    setVenueLocation({ address, lat: parseFloat(lat), lng: parseFloat(lng) });
+    setVenueLocation({ address, lat: parseFloat(lat), lng: parseFloat(lng), suggestion });
   };
 
   return (
@@ -50,6 +51,16 @@ export default function VenueConfigCard() {
               className="w-full bg-[#08111a] border border-[var(--color-navy-border)] rounded-xl px-3 py-2 text-white text-sm focus:border-[var(--color-accent-blue)] outline-none"
             />
           </div>
+        </div>
+
+        <div>
+          <label className="text-[10px] font-black text-slate-500 uppercase mb-1 block">Travel Suggestion (For Attendees)</label>
+          <textarea 
+            value={suggestion}
+            onChange={(e) => setSuggestion(e.target.value)}
+            className="w-full bg-[#08111a] border border-[var(--color-navy-border)] rounded-xl px-3 py-2 text-white text-sm focus:border-[var(--color-accent-blue)] outline-none min-h-[60px]"
+            placeholder="e.g., Follow the blue line on the map..."
+          />
         </div>
       </div>
 

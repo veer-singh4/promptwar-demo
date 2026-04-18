@@ -51,7 +51,8 @@ export const VenueProvider = ({ children }) => {
   const [venueLocation, setVenueLocation] = useState({ 
     address: "Wembley Stadium, London HA9 0WS",
     lat: 51.5560, 
-    lng: -0.2795 
+    lng: -0.2795,
+    suggestion: "Follow the blue line on the map above to reach the main entrance."
   });
 
   const raiseEmergency = useCallback((type, location, details) => {
