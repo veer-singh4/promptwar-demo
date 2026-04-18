@@ -43,24 +43,24 @@ export default function MobileLayout() {
   const currentNav = role === 'HOST' ? hostNav : attendeeNav;
 
   return (
-    <div className="flex flex-col h-screen h-[100dvh] overflow-hidden font-sans bg-[var(--color-navy-base)] text-slate-50 relative p-4 pb-20">
+    <div className="flex flex-col h-screen h-[100dvh] overflow-hidden font-sans bg-[var(--color-navy-base)] text-slate-50 relative">
       
       {/* Top micro-bar showing auth state */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-navy-border)] z-[60]">
+      <div className="fixed top-0 left-0 right-0 h-1 bg-[var(--color-navy-border)] z-[100]">
         <div className={cn("h-full transition-all duration-1000", role === 'HOST' ? "bg-[var(--color-status-amber)]" : "bg-[var(--color-accent-blue)]")} style={{width: '100%'}}></div>
       </div>
 
       {/* Logout bubble */}
       <button 
         onClick={logout} 
-        className="absolute top-4 right-4 z-[60] bg-[var(--color-navy-card)] border border-[var(--color-navy-border)] w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-white transition-all cursor-pointer shadow-lg active:scale-90" 
+        className="fixed top-4 right-4 z-[100] bg-[var(--color-navy-card)]/80 backdrop-blur-md border border-[var(--color-navy-border)] w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-white transition-all cursor-pointer shadow-lg active:scale-95" 
         title="Log Out"
       >
         <LogOut size={16} />
       </button>
 
-      <main id="main-content" className="flex-1 overflow-y-auto z-10" role="main">
-        <div className="max-w-md mx-auto h-full pt-12 pb-6">
+      <main id="main-content" className="flex-1 overflow-y-auto z-10 p-4 pb-24 pt-4" role="main">
+        <div className="max-w-md mx-auto h-full pt-12">
           <ErrorBoundary>
             <Suspense fallback={
               <div className="flex items-center justify-center h-full">
@@ -95,9 +95,9 @@ export default function MobileLayout() {
         </div>
       </main>
 
-      {/* Bottom Nav */}
-      <nav className="fixed bottom-0 w-full bg-[var(--color-navy-card)] border-t border-[var(--color-navy-border)] z-[100] left-0 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]" role="navigation">
-        <div className="flex justify-around items-center h-16 pb-safe max-w-md mx-auto">
+      {/* Bottom Nav - Ensured high z-index and pointer interaction */}
+      <nav className="fixed bottom-0 w-full bg-[var(--color-navy-card)] border-t border-[var(--color-navy-border)] z-[200] left-0 shadow-[0_-10px_40px_rgba(0,0,0,0.6)]" role="navigation">
+        <div className="grid grid-cols-4 items-center h-16 pb-safe max-w-md mx-auto px-2">
           {currentNav.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
@@ -108,7 +108,7 @@ export default function MobileLayout() {
                 key={item.name} 
                 to={item.path} 
                 className={cn(
-                  "flex flex-col items-center justify-center w-full h-full space-y-1 transition-all group min-h-[64px] relative",
+                  "flex flex-col items-center justify-center h-full space-y-1 group relative transition-all cursor-pointer",
                   isActive ? accentCls : "text-slate-400 hover:text-slate-200"
                 )}
               >
@@ -118,8 +118,8 @@ export default function MobileLayout() {
                 )}>
                   <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
                 </div>
-                <span className="text-[10px] font-black tracking-tight uppercase">{item.name}</span>
-                {isActive && <div className={cn("absolute bottom-0 w-6 h-1 rounded-t-full", role === 'HOST' ? "bg-[var(--color-status-amber)]" : "bg-[var(--color-accent-blue)]")}></div>}
+                <span className="text-[9px] font-black tracking-tighter uppercase">{item.name}</span>
+                {isActive && <div className={cn("absolute bottom-0 w-8 h-1 rounded-t-full", role === 'HOST' ? "bg-[var(--color-status-amber)]" : "bg-[var(--color-accent-blue)]")}></div>}
               </Link>
             );
           })}
