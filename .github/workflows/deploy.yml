@@ -7,7 +7,7 @@ on:
 
 env:
   PROJECT_ID: gen-ai-academy-491610
-  SERVICE: venue-iq-pro
+  SERVICE: promptwar-demo
   REGION: us-central1
 
 jobs:
