@@ -33,9 +33,9 @@ jobs:
 
     - name: 'Build and Push'
       run: |-
-        echo "VITE_GEMINI_API_KEY=AIzaSyD_OJrssHTJylpoW69FeU_GnxDTj7C3l3Q" > .env.production
-        echo "VITE_GOOGLE_MAPS_API_KEY=AIzaSyD_OJrssHTJylpoW69FeU_GnxDTj7C3l3Q" >> .env.production
-        echo "VITE_GA4_ID=G-VENUEIQPRO99" >> .env.production
+        echo "VITE_GEMINI_API_KEY=${{ secrets.VITE_GEMINI_API_KEY }}" > .env.production
+        echo "VITE_GOOGLE_MAPS_API_KEY=${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}" >> .env.production
+        echo "VITE_GA4_ID=${{ secrets.VITE_GA4_ID }}" >> .env.production
         gcloud builds submit --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }} .
 
     - name: 'Deploy to Cloud Run'
