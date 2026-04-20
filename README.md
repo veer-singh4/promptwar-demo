@@ -1,92 +1,132 @@
-# VenueIQ — Intelligent Match Day Assistant
+# VenueIQ — Coding Hackathon Venue Management Assistant
 
-**VenueIQ** is a production-grade, dual-interface web application designed to transform the large-scale event experience. By combining real-time venue logistics with Google’s cutting-edge AI (Gemini), VenueIQ ensures that fans spend less time in queues and more time enjoying the event, while providing staff with the command tools they need for operational excellence.
+VenueIQ is a high-performance, context-aware digital assistant designed to streamline the logistics and participant experience of large-scale coding hackathons. Built with Gemini 1.5 Flash and Google Maps, it transforms static venue information into dynamic, actionable guidance for both developers and organizers.
 
----
+## Public GitHub Repository
 
-## 🔗 Live Demo & Testing
-
-Experience VenueIQ instantly on Google Cloud Run. The application adapts its interface based on your login credentials.
-
-**Live Application URL**: [https://promptwar-demo-781746952048.us-central1.run.app](https://promptwar-demo-781746952048.us-central1.run.app)
-
-### Demo Credentials:
-- **Host / Manager View** (Command Dashboard):
-  - Login ID: `HostAdmin` (or any string containing "Host")
-- **Attendee / Fan View** (Navigation & AI):
-  - Login ID: `TX-123` (or any generic ticket ID)
-
----
-- **Google Services**: 
-  - **Gemini 1.5 Flash**: Context-aware assistant for routing and incident drafting.
-  - **Google Maps (React)**: Live-tracked markers, custom dark-mode styling, and interactive zone analysis.
-  - **Google Analytics 4**: High-value event tracking for SOS, AI, and Broadcast actions.
-- **Premium Aesthetics**: Glassmorphism UI, Recharts trend analysis, and motion-optimized transitions.
+- **Repository**: [https://github.com/veer-singh4/promptwar-demo](https://github.com/veer-singh4/promptwar-demo)
+- This repository contains the complete project code, including the React frontend, Gemini integration, and simulated venue telemetry.
 
 ---
 
-## 🧐 Approach & Logic
+## Chosen Vertical: Coding Hackathon Operations
 
-VenueIQ operates on a **Context-Aware Intelligence** model. Unlike static applications, our solution understands the *physical state* of the venue (wait times, gate loads, parking occupancy) and uses this as a "System Instruction" for the built-in Gemini AI.
-
-### How It Works:
-1. **Live Data Simulation**: A built-in "Simulation Engine" varies crowd density and service speeds across 15+ venue nodes.
-2. **Context Injection**: Every AI query automatically injects the current venue state and user role into the Gemini 1.5 Flash model.
-3. **Role-Based Logic**: 
-   - **Fans (Attendee)**: Focus on comfort, navigation, and time-saving.
-   - **Staff (Host)**: Focus on operational efficiency, system stress analysis, and emergency responses.
+Hackathons are high-intensity events where hundreds of participants need immediate access to power, food, mentors, and technical support. VenueIQ addresses the unique challenges of hackathon management:
+- **Participant Flow**: Managing "check-in" spikes and catering crowds.
+- **Resource Discovery**: Helping developers find the nearest coffee station, restroom, or mentor lounge.
+- **Emergency Response**: Providing a direct "SOS" line to organizers for technical or medical issues.
+- **Operational Oversight**: Giving hosts a "God-view" of the venue status to handle bottlenecks before they become problems.
 
 ---
 
-## 🚀 Key Google Integrations
+## Approach and Logic
 
-### 1. Gemini 1.5 Flash (Smart Assistant)
-A context-aware assistant that provides dynamic answers based on live venue metrics.
-- **Features**: Multi-turn chat sessions and safety-filtered outputs.
-- **Sanitization**: All AI responses are sanitized via `DOMPurify` before rendering to ensure session safety.
+VenueIQ operates on a **Contextual Intelligence** model:
 
-### 2. Google Maps (Interactive Logistics)
-Built using `@vis.gl/react-google-maps`.
-- **Interactivity**: Clickable markers for gates and parking sectors with live load data.
-- **Custom Styling**: Advanced dark-mode JSON styling to match the premium application aesthetic.
-
-### 3. Google Analytics 4 (GA4)
-Integrated event tracking to monitor high-impact user actions.
-- **Tracking**: Emergency SOS triggers, AI Query frequency, and Host Broadcasts.
+1.  **State-First AI**: Unlike standard bots, VenueIQ injects the **exact current state** of the hackathon (e.g., "Check-in Zone B: 90% full", "Coffee Station A: 12 min wait") into the Gemini system prompt. This ensures the AI never gives outdated advice.
+2.  **Role-Based Logic**: 
+    - **Participants** receive guidance focused on productivity and navigation.
+    - **Organizers (Hosts)** receive analytical data and controls to trigger simulations or broadcast alerts.
+3.  **Proactive Optimization**: The system logic prioritizes "load balancing." If one entry point or food station is overloaded, the AI and the Map UI automatically steer users toward underutilized resources.
 
 ---
 
-## 🔬 Simulation Controls (For Judges)
-In the **Host Dashboard**, we've included a **Simulation Control Board** that allows you to:
-- **Boost Traffic**: Manually stress test the system by increasing gate loads.
-- **Trigger Chaos**: Simulate high-congested states to see Gemini's mitigation recommendations in action.
+## How the Solution Works
+
+### 1) Real-Time Telemetry Engine
+The application maintains a centralized `VenueContext` that simulates real-world sensors. It tracks:
+- **Entry Zones**: Congestion levels at check-in desks.
+- **Fuel Stations**: Wait times for catering and beverages.
+- **Support Queues**: Availability of technical mentors and hardware desks.
+- **Live Alerts**: System-wide broadcasts and emergency requests.
+
+### 2) Gemini AI Assistant
+The assistant uses **Gemini 1.5 Flash** to process natural language queries. 
+- **System Prompting**: Every request includes a snapshot of the venue state.
+- **Actionable Output**: The AI can tell a user, *"Check-in Zone A is currently at 88% capacity. I recommend heading to Entry Zone 6 for a faster experience."*
+
+### 3) Interactive Mapping
+Powered by the **Google Maps JavaScript API**, the app provides a mobile-first navigation experience:
+- **Personalized Routing**: Routes developers from their current GPS location to the venue.
+- **Zone Overlays**: Visual indicators of zone "Stress" (Clear, Busy, Avoid).
+- **Expandable Exploration**: Full-screen map mode for detailed venue inspection.
+
+### 4) Organizer Control Center (Host Mode)
+Hosts have access to a dedicated dashboard where they can:
+- **Broadcast Alerts**: Send immediate notifications to all participants.
+- **Incident Management**: View and resolve "Emergency/Help" requests in real-time.
+- **Chaos Simulation**: Stress-test the system by simulating a mass-load event.
 
 ---
 
-## 🔒 Security & Quality
-- **Sanitization**: Robust HTML sanitization for all user and AI content.
-- **Error Boundaries**: Root-level error catching ensures zero app crashes.
-- **Vitest Suite**: Unit tests for all core AI and utility services.
+## Assumptions Made
+
+1.  **Telemetry Simulation**: For the purpose of this solution, venue data (loads/waits) is generated by a simulation loop. In production, this would connect to IoT sensors or manual staff-side trackers.
+2.  **Lightweight Auth**: Roles are determined by user ID strings (e.g., IDs containing `host` gain organizer privileges).
+3.  **Connectivity**: The solution assumes participants have internet access to reach the Gemini API and Google Maps services.
+4.  **Venue Agnosticity**: While crowd loads are dynamic, the system is designed to be location-agnostic. The "Venue" can be any physical space—from a corporate innovation center to a massive convention hall—by simply updating the coordinate metadata and zone labels.
 
 ---
 
-## 🛠️ Getting Started
+## Organizer's Management Guide
 
-### Environment Variables
-Create a `.env` file in the root using the provided `.env.example`:
+VenueIQ is built not just for participants, but as a "Command and Control" center for event staff. Here is how organizers can manage a live hackathon:
+
+1.  **Monitor Zone Heat**: Use the Host Dashboard to see real-time congestion at entry points. If "Zone A" hits 80%, use the broadcast tool to re-route incoming developers to "Zone C".
+2.  **Handle Technical SOS**: When a participant raises a "Tech Support" help request, it appears instantly on the manager's dashboard with their location. Staff can mark requests as "Resolved" as they clear the queue.
+3.  **Broadcast Critical Updates**: Use the global broadcast feature for announcements like "Prizegiving starting in 10 mins at the Main Stage" or "Dinner is now served in Catering Area B".
+4.  **Stress Testing**: Before the event starts, use the "Chaos Mode" simulation to ensure staff are familiar with high-load scenarios and the AI's rerouting logic.
+
+---
+
+## Project Structure
+
+The project is architected for scalability and clear separation of concerns:
+
+- **`src/context/`**: Contains the core logic for the event state (`VenueContext`) and user authentication (`AuthContext`).
+- **`src/services/`**: Handles the integration with Gemini 1.5 Flash, including dynamic prompt construction.
+- **`src/screens/`**: Implements role-based views such as the Participant Home, AI Assistant, and Organizer Dashboard.
+- **`src/components/`**: Reusable UI components including the interactive map, SOS forms, and operational control cards.
+- **`src/lib/`**: Contains security utilities for input sanitization and standard theme configurations.
+
+---
+
+## Technical Approach & Management Logic
+
+The "Management" aspect of the solution is handled through a **Centralized State Hub**:
+
+1.  **Telemetry Aggregation**: The system simulates or consumes data from multiple zones (check-in, technical support, catering).
+2.  **Congestion Logic**: A proximity-and-load algorithm determines the "Status" (Clear, Busy, Avoid) of each zone.
+3.  **Instruction Injection**: This status is converted into natural language descriptors and injected into the AI's short-term memory (System Instruction).
+4.  **Two-Way Communication**: 
+    - Participants send "Help Requests" which include their role, location, and specific problem.
+    - Organizers see these requests in a prioritized list on the Host Dashboard and can broadcast tailored solutions globally or resolve them individually.
+
+---
+
+## Tech Stack
+
+- **Frontend**: React 18, Vite, Tailwind CSS
+- **AI**: Google Gemini 1.5 Flash
+- **Maps**: Google Maps JavaScript API (@vis.gl/react-google-maps)
+- **Icons**: Lucide React
+- **Analytics**: Google Analytics 4
+
+---
+
+## Setup & Installation
+
+### 1. Environment Variables
+Create a `.env` file in the root:
 ```env
-VITE_GEMINI_API_KEY=your_key_here
-VITE_GOOGLE_MAPS_API_KEY=your_key_here
-VITE_GA4_ID=G-XXXXXXXXXX
+VITE_GEMINI_API_KEY=your_gemini_key
+VITE_GOOGLE_MAPS_API_KEY=your_maps_key
+VITE_GA4_ID=optional_ga4_tag
 ```
 
-### Local Development
+### 2. Run Locally
 ```bash
 npm install
 npm run dev
 ```
 
-### Run Tests
-```bash
-npm run test
-```
